@@ -446,7 +446,7 @@ function tone(freq,t0,dur,vol,type){var ctx=audio();if(!ctx)return;try{var o=ctx
   g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol||.15,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(ctx.destination);o.start(t);o.stop(t+dur+.02);}catch(e){}}
 function jingle(){tone(1568,0,.18,.08,'triangle');tone(2093,.06,.2,.07,'triangle');tone(2637,.12,.25,.06,'triangle');}
 function chaChing(){tone(988,0,.12,.1,'square');tone(1319,.1,.35,.12,'triangle');jingle();}
-function buzz(ms){try{if(navigator.vibrate)navigator.vibrate(ms||8);}catch(e){}}
+function buzz(ms){try{var ua=navigator.userActivation;if(navigator.vibrate&&(!ua||ua.hasBeenActive))navigator.vibrate(ms||8);}catch(e){}}
 
 /* ================= helpers ================= */
 var toastT=0;
