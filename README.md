@@ -16,6 +16,8 @@ A visual of each kid's real Crew card balance, shown as play money. This app nev
 - **Parent settings** (lock icon): type each kid's Crew balance, name, level and bill theme. **Prototype PIN: 1234** (change it inside).
 
 ## Notes
-- The bills are original play money ("iFARLEY'S BANK", not legal tender). They don't copy U.S. currency or any show's characters.
+- The bills are original play money ("iFARLEY'S BANK", marked "not legal tender" and "for practice only"). The engraved look (paper, guilloche, vignettes of a sunrise, compass rose, oak, mountains, ship and lighthouse) is drawn from scratch and doesn't copy U.S. currency or any show's characters.
+- Bill and coin art is drawn as SVG and turned into cached images once per kid, so swiping stays smooth.
+- Lettering on the bills uses Cinzel (SIL Open Font License), embedded as a small subset.
 - Data is saved only in this browser (localStorage). Clearing Chrome's site data resets it.
 - Built as one self-contained `index.html` with no build step.
