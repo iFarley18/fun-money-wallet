@@ -1,0 +1,2949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#0d1b2a" />
+<title>Fun Money Wallet</title>
+<style>
+  :root {
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --nav-clear: max(56px, calc(var(--safe-bottom) + 52px));
+
+    /* Default Deep Sea theme (Everest) */
+    --bg-top: #0c1f33;
+    --bg-mid: #122c46;
+    --bg-bottom: #091726;
+    --surface: rgba(255, 255, 255, 0.08);
+    --surface-strong: rgba(255, 255, 255, 0.14);
+    --surface-border: rgba(163, 213, 255, 0.22);
+    --accent: #38bdf8;
+    --accent-ink: #062033;
+    --accent-soft: rgba(56, 189, 248, 0.18);
+    --gold: #fbbf24;
+    --text-main: #f4f8fb;
+    --text-muted: #a6bfd4;
+    --danger: #f87171;
+    --success: #34d399;
+
+    /* Embedded classic serif stack for banknote typography (works offline & Android WebView) */
+    --bank-serif: "Cinzel", "Times New Roman", "Liberation Serif", "DejaVu Serif", Georgia, serif;
+    --ui-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  body[data-theme="dojo"] {
+    --bg-top: #231115;
+    --bg-mid: #34181e;
+    --bg-bottom: #180b0e;
+    --surface: rgba(255, 240, 230, 0.08);
+    --surface-strong: rgba(255, 240, 230, 0.14);
+    --surface-border: rgba(251, 191, 36, 0.24);
+    --accent: #f59e0b;
+    --accent-ink: #271104;
+    --accent-soft: rgba(245, 158, 11, 0.2);
+    --gold: #fde047;
+    --text-main: #fdf8f4;
+    --text-muted: #d6bdb2;
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    font-family: var(--ui-sans);
+    color: var(--text-main);
+    background: linear-gradient(175deg, var(--bg-top) 0%, var(--bg-mid) 52%, var(--bg-bottom) 100%);
+  }
+
+  #app {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-width: 520px;
+    margin: 0 auto;
+    padding-top: calc(var(--safe-top) + 8px);
+    padding-bottom: var(--nav-clear);
+    position: relative;
+  }
+
+  /* Storage warning */
+  .storage-warning {
+    background: #991b1b;
+    color: #fff;
+    font-size: 13px;
+    padding: 6px 12px;
+    text-align: center;
+    font-weight: 600;
+  }
+
+  /* Preview Banner */
+  .preview-banner {
+    margin: 0 12px 6px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: repeating-linear-gradient(
+      -45deg,
+      rgba(251, 191, 36, 0.22),
+      rgba(251, 191, 36, 0.22) 10px,
+      rgba(15, 23, 42, 0.45) 10px,
+      rgba(15, 23, 42, 0.45) 20px
+    );
+    border: 1.5px solid var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .preview-banner-text {
+    font-size: 13px;
+    font-weight: 700;
+    color: #fef3c7;
+    letter-spacing: 0.2px;
+  }
+
+  .btn-exit-preview {
+    min-height: 48px;
+    padding: 0 14px;
+    border-radius: 10px;
+    border: none;
+    background: var(--gold);
+    color: #1c1302;
+    font-weight: 800;
+    font-size: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  /* Top Bar: Kid Tabs + Parent Lock */
+  .top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    gap: 8px;
+  }
+
+  .kid-tabs {
+    display: flex;
+    gap: 6px;
+    flex: 1;
+    overflow-x: auto;
+  }
+
+  .kid-tab {
+    min-height: 48px;
+    padding: 0 16px;
+    border-radius: 14px;
+    border: 1px solid var(--surface-border);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+
+  .kid-tab.active {
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-color: var(--accent);
+  }
+
+  .kid-level-badge {
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.18);
+  }
+
+  .icon-btn {
+    min-width: 48px;
+    min-height: 48px;
+    border-radius: 14px;
+    border: 1px solid var(--surface-border);
+    background: var(--surface);
+    color: var(--text-main);
+    font-size: 18px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Header Card: Balance + Source + Mode Switch */
+  .wallet-header {
+    margin: 8px 12px 6px;
+    padding: 10px 14px;
+    border-radius: 18px;
+    background: var(--surface);
+    border: 1px solid var(--surface-border);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .balance-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .balance-trigger {
+    background: none;
+    border: none;
+    padding: 2px 4px;
+    margin: 0;
+    color: var(--text-main);
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+    cursor: pointer;
+    min-height: 48px;
+    text-align: left;
+  }
+
+  .balance-trigger:disabled {
+    cursor: default;
+    opacity: 0.95;
+  }
+
+  .big-balance {
+    font-size: 34px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .big-balance.preview-shift {
+    font-size: 25px;
+    color: var(--gold);
+  }
+
+  .set-pill {
+    font-size: 13px;
+    font-weight: 700;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border: 1px solid var(--surface-border);
+  }
+
+  .view-toggle {
+    display: inline-flex;
+    background: rgba(0, 0, 0, 0.28);
+    border-radius: 12px;
+    padding: 3px;
+    border: 1px solid var(--surface-border);
+  }
+
+  .view-toggle button {
+    min-height: 48px;
+    padding: 0 14px;
+    border: none;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--text-muted);
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .view-toggle button.active {
+    background: var(--surface-strong);
+    color: var(--text-main);
+  }
+
+  .meta-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--text-muted);
+    gap: 8px;
+  }
+
+  /* Change banner */
+  .change-banner {
+    margin: 0 12px 6px;
+    padding: 6px 12px;
+    border-radius: 12px;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .btn-replay {
+    min-height: 48px;
+    padding: 0 12px;
+    border-radius: 10px;
+    border: 1px solid var(--accent);
+    background: rgba(0, 0, 0, 0.25);
+    color: var(--text-main);
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  /* Main Stage */
+  .stage {
+    flex: 1;
+    min-height: 0;
+    margin: 0 12px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* WAD VIEW */
+  .wad-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0 8px;
+    touch-action: none;
+    position: relative;
+  }
+
+  .wad-readout {
+    text-align: center;
+    min-height: 54px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .wad-count-main {
+    font-size: 26px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    transition: color 0.12s;
+  }
+
+  .wad-count-main.tentative {
+    color: var(--gold);
+  }
+
+  .wad-count-sub {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .wad-arena {
+    flex: 1;
+    width: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    perspective: 1100px;
+    touch-action: none;
+  }
+
+  .counted-pile-zone {
+    width: 240px;
+    height: 92px;
+    border-radius: 12px;
+    border: 1.5px dashed var(--surface-border);
+    background: rgba(0, 0, 0, 0.16);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+  }
+
+  .counted-pile-label {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 600;
+    pointer-events: none;
+  }
+
+  .counted-card {
+    position: absolute;
+    width: 224px;
+    height: 94px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45);
+    background-size: cover;
+    background-position: center;
+    transition: transform 0.25s ease-out;
+  }
+
+  .wad-stack-wrapper {
+    position: relative;
+    width: 272px;
+    height: 158px;
+    transform-style: preserve-3d;
+    touch-action: none;
+    cursor: grab;
+  }
+
+  .wad-bill-card {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 272px;
+    height: 116px;
+    border-radius: 8px;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.48);
+    transform-origin: 50% 0%;
+    will-change: transform;
+    overflow: hidden;
+    backface-visibility: visible;
+  }
+
+  /* Folded crease shadow across middle of wad */
+  .wad-bill-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.06) 0%,
+      rgba(0, 0, 0, 0.04) 47%,
+      rgba(0, 0, 0, 0.26) 50%,
+      rgba(255, 255, 255, 0.12) 53%,
+      rgba(0, 0, 0, 0.12) 100%
+    );
+    pointer-events: none;
+  }
+
+  .wad-bill-face {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+  }
+
+  .wad-bottom-strip {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8px;
+    gap: 10px;
+  }
+
+  .wad-hint {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  .wad-coin-cluster {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 14px;
+    background: var(--surface);
+    border: 1px solid var(--surface-border);
+  }
+
+  .wad-coin-icons {
+    display: flex;
+    align-items: center;
+  }
+
+  .wad-coin-icons img {
+    width: 28px;
+    height: 28px;
+    margin-left: -8px;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+  }
+
+  .wad-coin-icons img:first-child {
+    margin-left: 0;
+  }
+
+  .wad-coin-label {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--gold);
+  }
+
+  /* COUNTER VIEW */
+  .counter-view {
+    flex: 1;
+    border-radius: 18px;
+    padding: 12px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background:
+      repeating-linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.02) 0px,
+        rgba(255, 255, 255, 0.02) 2px,
+        rgba(0, 0, 0, 0.05) 2px,
+        rgba(0, 0, 0, 0.05) 7px
+      ),
+      linear-gradient(180deg, #5a3a22 0%, #472c18 55%, #382111 100%);
+    border: 2px solid #784f30;
+    box-shadow: inset 0 2px 14px rgba(0, 0, 0, 0.45);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .counter-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 6px 8px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.18);
+  }
+
+  .counter-bills-fan {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-height: 68px;
+    padding-left: 4px;
+  }
+
+  .counter-bill-item {
+    width: 142px;
+    height: 60px;
+    border-radius: 6px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45);
+    margin-left: -96px;
+    transition: transform 0.22s ease, opacity 0.25s ease, box-shadow 0.22s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .counter-bill-item:first-child {
+    margin-left: 0;
+  }
+
+  .counter-bill-item img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+  }
+
+  .counter-bill-item.anim-new {
+    box-shadow: 0 0 18px 4px rgba(56, 189, 248, 0.85);
+    animation: billLand 0.55s ease-out;
+  }
+
+  .counter-bill-item.anim-spent {
+    animation: billFlyOff 0.65s ease-in forwards;
+  }
+
+  @keyframes billLand {
+    0% { transform: translateY(-28px) scale(1.08); opacity: 0.2; }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+  }
+
+  @keyframes billFlyOff {
+    0% { transform: translateX(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateX(140px) translateY(-30px) rotate(14deg); opacity: 0; }
+  }
+
+  .counter-row-label {
+    font-size: 23px;
+    font-weight: 800;
+    color: #fef3c7;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  }
+
+  .counter-coins-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 8px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.22);
+  }
+
+  .coin-group-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    min-height: 52px;
+    cursor: pointer;
+  }
+
+  .coin-group-card.disabled {
+    opacity: 0.65;
+    cursor: default;
+  }
+
+  .coin-stack-mini {
+    display: flex;
+    align-items: center;
+  }
+
+  .coin-stack-mini img {
+    width: 34px;
+    height: 34px;
+    margin-left: -12px;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.45);
+  }
+
+  .coin-stack-mini img:first-child {
+    margin-left: 0;
+  }
+
+  .coin-group-label {
+    font-size: 18px;
+    font-weight: 800;
+    color: #fef3c7;
+  }
+
+  /* Cashier Tray inside Counter during "I want something" */
+  .cashier-panel {
+    border-radius: 14px;
+    padding: 10px 12px;
+    background: rgba(15, 23, 42, 0.88);
+    border: 1.5px solid var(--accent);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .cashier-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .cashier-item-title {
+    font-size: 16px;
+    font-weight: 800;
+  }
+
+  .cashier-status {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--gold);
+  }
+
+  .tray-pieces {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-height: 48px;
+    padding: 6px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.06);
+    align-items: center;
+  }
+
+  .tray-piece-btn {
+    min-height: 48px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--surface-border);
+    background: var(--surface-strong);
+    color: var(--text-main);
+    font-weight: 800;
+    font-size: 15px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .cashier-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn-pay {
+    flex: 1;
+    min-height: 50px;
+    border-radius: 12px;
+    border: none;
+    background: var(--success);
+    color: #052e16;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .btn-pay:disabled {
+    background: rgba(255, 255, 255, 0.14);
+    color: var(--text-muted);
+    cursor: not-allowed;
+  }
+
+  .btn-show-me {
+    min-height: 50px;
+    padding: 0 14px;
+    border-radius: 12px;
+    border: 1.5px solid var(--gold);
+    background: rgba(251, 191, 36, 0.16);
+    color: #fef3c7;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  /* Empty State */
+  .empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+    gap: 10px;
+  }
+
+  .empty-state-title {
+    font-size: 20px;
+    font-weight: 800;
+  }
+
+  .empty-state-body {
+    font-size: 15px;
+    color: var(--text-muted);
+    max-width: 290px;
+    line-height: 1.45;
+  }
+
+  /* Bottom Action Bar (kept >= 52px above screen bottom via #app padding-bottom) */
+  .bottom-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 8px 12px 4px;
+  }
+
+  .action-btn {
+    min-height: 54px;
+    border-radius: 16px;
+    border: 1px solid var(--surface-border);
+    background: var(--surface-strong);
+    color: var(--text-main);
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .action-btn.primary {
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-color: var(--accent);
+  }
+
+  /* Modals / Sheets */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 10, 18, 0.78);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 50;
+    padding-bottom: var(--nav-clear);
+  }
+
+  .modal-sheet {
+    width: 100%;
+    max-width: 520px;
+    max-height: 86vh;
+    overflow-y: auto;
+    background: #132234;
+    border-top-left-radius: 22px;
+    border-top-right-radius: 22px;
+    border: 1px solid var(--surface-border);
+    padding: 16px 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.6);
+  }
+
+  .modal-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .modal-title {
+    font-size: 19px;
+    font-weight: 800;
+  }
+
+  .chip-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .choice-chip {
+    min-height: 48px;
+    padding: 8px;
+    border-radius: 12px;
+    border: 1px solid var(--surface-border);
+    background: var(--surface);
+    color: var(--text-main);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .choice-chip.selected {
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-color: var(--accent);
+  }
+
+  /* Keypad */
+  .keypad-display {
+    padding: 12px;
+    border-radius: 14px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid var(--surface-border);
+    font-size: 30px;
+    font-weight: 800;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    min-height: 58px;
+  }
+
+  .keypad-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .key-btn {
+    min-height: 58px;
+    border-radius: 14px;
+    border: 1px solid var(--surface-border);
+    background: var(--surface-strong);
+    color: var(--text-main);
+    font-size: 22px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .key-btn:active {
+    transform: scale(0.97);
+  }
+
+  .pin-dots {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    padding: 10px 0;
+  }
+
+  .pin-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+    background: transparent;
+  }
+
+  .pin-dot.filled {
+    background: var(--accent);
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-10px); }
+    40%, 80% { transform: translateX(10px); }
+  }
+
+  .shake {
+    animation: shake 0.35s ease;
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .form-field label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+  }
+
+  .form-input {
+    min-height: 48px;
+    padding: 0 12px;
+    border-radius: 12px;
+    border: 1.5px solid var(--surface-border);
+    background: rgba(0, 0, 0, 0.3);
+    color: var(--text-main);
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .form-input.invalid {
+    border-color: var(--danger);
+    outline: 2px solid rgba(248, 113, 113, 0.35);
+  }
+
+  .row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .btn-secondary {
+    min-height: 50px;
+    border-radius: 12px;
+    border: 1px solid var(--surface-border);
+    background: var(--surface);
+    color: var(--text-main);
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0 14px;
+  }
+
+  .btn-primary-modal {
+    min-height: 50px;
+    border-radius: 12px;
+    border: none;
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    padding: 0 16px;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+</head>
+<body data-theme="deep-sea">
+<div id="app"></div>
+
+<script>
+(() => {
+  "use strict";
+
+  // ============================================================
+  // 1. EXACT INTEGER-CENTS MONEY MODEL
+  // ============================================================
+  const BILL_DENOMS = [10000, 5000, 2000, 1000, 500, 100];
+  const COIN_DENOMS = [25, 10, 5, 1];
+  const ALL_DENOMS = [...BILL_DENOMS, ...COIN_DENOMS];
+  const MAX_CENTS = 999999; // $9,999.99
+
+  function breakdownCents(cents) {
+    let rem = Math.max(0, Math.round(cents));
+    const bills = [];
+    const coins = [];
+    for (const d of BILL_DENOMS) {
+      const count = Math.floor(rem / d);
+      for (let i = 0; i < count; i++) bills.push(d);
+      rem %= d;
+    }
+    for (const d of COIN_DENOMS) {
+      const count = Math.floor(rem / d);
+      for (let i = 0; i < count; i++) coins.push(d);
+      rem %= d;
+    }
+    return { bills, coins };
+  }
+
+  function sumPieces(pieces) {
+    let s = 0;
+    for (let i = 0; i < pieces.length; i++) s += pieces[i];
+    return s;
+  }
+
+  /**
+   * Natural tender solver:
+   * - Fewest pieces that cover price, breaking ties by least overpay.
+   * - Single bill that covers price always wins (handled naturally by fewest pieces = 1 + least overpay).
+   * - Level 1: searches bills only. If bills alone cannot cover price, hands over all bills + fewest coins covering remainder.
+   * - Level 2: searches bills and coins together (with single-bill-wins priority when a single bill covers price).
+   */
+  function computeNaturalTender(walletBills, walletCoins, priceCents, level) {
+    const totalWallet = sumPieces(walletBills) + sumPieces(walletCoins);
+    if (priceCents <= 0) return { pieces: [], possible: true };
+    if (totalWallet < priceCents) return { pieces: [], possible: false };
+
+    // Single bill wins rule (both levels)
+    const coveringSingleBills = walletBills.filter(b => b >= priceCents);
+    if (coveringSingleBills.length > 0) {
+      const smallestCover = Math.min(...coveringSingleBills);
+      return { pieces: [smallestCover], possible: true };
+    }
+
+    // Helper: bounded subset search minimizing [pieceCount, overpay]
+    function bestSubset(items, target) {
+      const n = items.length;
+      if (sumPieces(items) < target) return null;
+
+      // Group identical denominations to prune search dramatically
+      const groups = [];
+      const sorted = [...items].sort((a, b) => b - a);
+      for (const val of sorted) {
+        if (groups.length && groups[groups.length - 1].val === val) {
+          groups[groups.length - 1].max++;
+        } else {
+          groups.push({ val, max: 1 });
+        }
+      }
+
+      // Suffix sums for branch-and-bound
+      const suffixSum = new Array(groups.length + 1).fill(0);
+      for (let i = groups.length - 1; i >= 0; i--) {
+        suffixSum[i] = suffixSum[i + 1] + groups[i].val * groups[i].max;
+      }
+
+      let bestCount = Infinity;
+      let bestOverpay = Infinity;
+      let bestChoice = null;
+      const current = [];
+
+      function dfs(idx, curSum, curCount) {
+        if (curCount > bestCount) return;
+        if (curSum >= target) {
+          const overpay = curSum - target;
+          if (curCount < bestCount || (curCount === bestCount && overpay < bestOverpay)) {
+            bestCount = curCount;
+            bestOverpay = overpay;
+            bestChoice = current.slice();
+          }
+          return;
+        }
+        if (idx >= groups.length) return;
+        if (curSum + suffixSum[idx] < target) return;
+
+        const { val, max } = groups[idx];
+        // Upper bound on how many of this denomination could ever be needed
+        const needed = target - curSum;
+        const maxUseful = Math.min(max, Math.ceil(needed / val));
+
+        // Try taking from 0 up to maxUseful (fewer pieces explored first)
+        for (let take = 0; take <= maxUseful; take++) {
+          if (curCount + take > bestCount) break;
+          for (let k = 0; k < take; k++) current.push(val);
+          dfs(idx + 1, curSum + take * val, curCount + take);
+          for (let k = 0; k < take; k++) current.pop();
+        }
+      }
+
+      dfs(0, 0, 0);
+      return bestChoice;
+    }
+
+    if (level === 1) {
+      const billsTotal = sumPieces(walletBills);
+      if (billsTotal >= priceCents) {
+        const chosenBills = bestSubset(walletBills, priceCents);
+        return { pieces: chosenBills || walletBills.slice(), possible: true };
+      } else {
+        const rem = priceCents - billsTotal;
+        const chosenCoins = bestSubset(walletCoins, rem) || walletCoins.slice();
+        return { pieces: [...walletBills, ...chosenCoins], possible: true };
+      }
+    } else {
+      const all = [...walletBills, ...walletCoins];
+      const chosen = bestSubset(all, priceCents);
+      return { pieces: chosen || all, possible: true };
+    }
+  }
+
+  function formatMoney(cents, options = {}) {
+    const neg = cents < 0;
+    const abs = Math.abs(Math.round(cents));
+    if (options.shortUnderDollar && abs > 0 && abs < 100) {
+      return `${neg ? "-" : ""}${abs}¢`;
+    }
+    const dollars = Math.floor(abs / 100);
+    const rem = abs % 100;
+    const dollarStr = dollars.toLocaleString("en-US");
+    if (options.omitZeroCents && rem === 0) {
+      return `${neg ? "-" : ""}$${dollarStr}`;
+    }
+    return `${neg ? "-" : ""}$${dollarStr}.${String(rem).padStart(2, "0")}`;
+  }
+
+  function parseDollarInput(raw) {
+    if (typeof raw !== "string") return null;
+    let s = raw.trim().replace(/\$/g, "").replace(/\s+/g, "");
+    if (!s) return null;
+    // Support comma decimal separator (e.g. "12,34") vs thousands commas ("1,234.5")
+    if (s.includes(",") && !s.includes(".")) {
+      const parts = s.split(",");
+      if (parts.length === 2 && parts[1].length <= 2) {
+        s = parts[0] + "." + parts[1];
+      } else {
+        s = s.replace(/,/g, "");
+      }
+    } else {
+      s = s.replace(/,/g, "");
+    }
+    if (!/^\d*(\.\d{0,2})?$/.test(s) || s === "." || s === "") return null;
+    const [dPart = "0", cPart = ""] = s.split(".");
+    const dollars = parseInt(dPart || "0", 10);
+    const cents = parseInt((cPart + "00").slice(0, 2), 10);
+    if (Number.isNaN(dollars) || Number.isNaN(cents)) return null;
+    const total = dollars * 100 + cents;
+    if (total < 0 || total > MAX_CENTS) return null;
+    return total;
+  }
+
+  function formatRelativeDay(isoDateStr) {
+    if (!isoDateStr) return "today";
+    const d = new Date(isoDateStr);
+    if (Number.isNaN(d.getTime())) return "today";
+    const now = new Date();
+    const startNow = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startThen = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const diffDays = Math.round((startNow - startThen) / 86400000);
+    if (diffDays === 0) return "today";
+    if (diffDays === 1) return "yesterday";
+    if (diffDays > 1 && diffDays < 7) {
+      return d.toLocaleDateString("en-US", { weekday: "long" });
+    }
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  }
+
+  // ============================================================
+  // 2. AUDIO (WebAudio paper riffle + coin clink) & HAPTICS
+  // ============================================================
+  let audioCtx = null;
+  let userHasInteracted = false;
+
+  function unlockGesture() {
+    userHasInteracted = true;
+    if (!audioCtx && (window.AudioContext || window.webkitAudioContext)) {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new Ctx();
+    }
+    if (audioCtx && audioCtx.state === "suspended") {
+      audioCtx.resume().catch(() => {});
+    }
+  }
+
+  function triggerHaptic(ms = 12) {
+    if (!userHasInteracted) return;
+    if (window.AndroidBridge && typeof window.AndroidBridge.vibrate === "function") {
+      window.AndroidBridge.vibrate(ms);
+      return;
+    }
+    if (navigator.vibrate) {
+      try { navigator.vibrate(ms); } catch (_) {}
+    }
+  }
+
+  function playPaperRiffle() {
+    if (!state.soundEnabled || !userHasInteracted || !audioCtx) return;
+    try {
+      const now = audioCtx.currentTime;
+      const duration = 0.085;
+      const bufferSize = Math.floor(audioCtx.sampleRate * duration);
+      const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        const env = Math.sin((i / bufferSize) * Math.PI);
+        data[i] = (Math.random() * 2 - 1) * env * 0.55;
+      }
+      const noise = audioCtx.createBufferSource();
+      noise.buffer = buffer;
+
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = "bandpass";
+      filter.frequency.setValueAtTime(1600, now);
+      filter.frequency.exponentialRampToValueAtTime(3100, now + duration);
+      filter.Q.value = 1.6;
+
+      const gain = audioCtx.createGain();
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(0.28, now + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(audioCtx.destination);
+      noise.start(now);
+    } catch (_) {}
+  }
+
+  function playCoinClink() {
+    if (!state.soundEnabled || !userHasInteracted || !audioCtx) return;
+    try {
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(2450, now);
+      osc.frequency.exponentialRampToValueAtTime(3680, now + 0.06);
+      gain.gain.setValueAtTime(0.14, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.09);
+    } catch (_) {}
+  }
+
+  // ============================================================
+  // 3. ENGRAVED PLAY-MONEY & COIN RENDERER (SVG -> Cached PNG)
+  // ============================================================
+  const BILL_PALETTES = {
+    100: { primary: "#5a5534", secondary: "#847c4d", tint: "#f3f0e0", word: "ONE HUNDRED", serial: "FM 100 · 842 910", motif: "sunrise" },
+    50:  { primary: "#1f5a60", secondary: "#397f87", tint: "#e6f2f2", word: "FIFTY",       serial: "FM 50 · 619 304", motif: "compass" },
+    20:  { primary: "#7c3c27", secondary: "#a8583e", tint: "#f6ebe5", word: "TWENTY",      serial: "FM 20 · 986 202", motif: "oak" },
+    10:  { primary: "#35583c", secondary: "#547e5c", tint: "#e9f2ea", word: "TEN",         serial: "FM 10 · 471 825", motif: "mountains" },
+    5:   { primary: "#573963", secondary: "#7b578a", tint: "#f1ebf4", word: "FIVE",        serial: "FM 05 · 318 659", motif: "ship" },
+    1:   { primary: "#2c4969", secondary: "#496d94", tint: "#e8eff6", word: "ONE",         serial: "FM 01 · 194 732", motif: "lighthouse" }
+  };
+
+  const billImageCache = new Map();
+  const coinImageCache = new Map();
+
+  function buildGuillocheRose(cx, cy, rOuter, rInner, petals, stroke, opacity = 0.45) {
+    let d = "";
+    const steps = 260;
+    for (let i = 0; i <= steps; i++) {
+      const t = (i / steps) * Math.PI * 2;
+      const r = (rOuter + rInner) * 0.5 + (rOuter - rInner) * 0.5 * Math.cos(petals * t);
+      const x = cx + r * Math.cos(t);
+      const y = cy + r * Math.sin(t);
+      d += (i === 0 ? "M" : "L") + x.toFixed(1) + "," + y.toFixed(1);
+    }
+    return `<path d="${d} Z" fill="none" stroke="${stroke}" stroke-width="0.9" opacity="${opacity}" />`;
+  }
+
+  function buildSineBorder(w, h, pad, stroke, isDojo) {
+    let paths = "";
+    const amp = 3.2;
+    const freq = isDojo ? 0.22 : 0.16;
+    for (let phase = 0; phase < 2; phase++) {
+      let topD = "";
+      let botD = "";
+      for (let x = pad; x <= w - pad; x += 4) {
+        const wave = isDojo
+          ? (((Math.floor(x * freq) + phase) % 2 === 0 ? 1 : -1) * amp)
+          : Math.sin(x * freq + phase * Math.PI) * amp;
+        topD += (x === pad ? "M" : "L") + `${x},${(pad + wave).toFixed(1)}`;
+        botD += (x === pad ? "M" : "L") + `${x},${(h - pad + wave).toFixed(1)}`;
+      }
+      paths += `<path d="${topD}" fill="none" stroke="${stroke}" stroke-width="0.85" opacity="0.55" />`;
+      paths += `<path d="${botD}" fill="none" stroke="${stroke}" stroke-width="0.85" opacity="0.55" />`;
+    }
+    return paths;
+  }
+
+  function buildUnderprint(w, h, stroke, isDojo) {
+    let out = `<g stroke="${stroke}" fill="none" opacity="0.14" stroke-width="0.8">`;
+    if (isDojo) {
+      // Seigaiha wave-scale pattern
+      for (let y = 36; y < h - 24; y += 22) {
+        for (let x = 32; x < w - 24; x += 36) {
+          const ox = x + ((y / 22) % 2) * 18;
+          out += `<circle cx="${ox}" cy="${y}" r="14" />`;
+          out += `<circle cx="${ox}" cy="${y}" r="9" />`;
+          out += `<circle cx="${ox}" cy="${y}" r="4.5" />`;
+        }
+      }
+    } else {
+      // Deep-sea undulating wave lines
+      for (let y = 30; y < h - 24; y += 14) {
+        let d = `M 24 ${y}`;
+        for (let x = 24; x <= w - 24; x += 12) {
+          const wy = y + Math.sin(x * 0.08 + y * 0.2) * 3.5;
+          d += ` L ${x} ${wy.toFixed(1)}`;
+        }
+        out += `<path d="${d}" />`;
+      }
+    }
+    out += `</g>`;
+    return out;
+  }
+
+  function buildVignetteArt(motif, cx, cy, stroke) {
+    switch (motif) {
+      case "lighthouse":
+        return `
+          <g stroke="${stroke}" fill="none" stroke-width="1.3">
+            <path d="M ${cx - 34} ${cy + 28} Q ${cx} ${cy + 20} ${cx + 34} ${cy + 28}" />
+            <path d="M ${cx - 10} ${cy + 24} L ${cx - 6} ${cy - 18} L ${cx + 6} ${cy - 18} L ${cx + 10} ${cy + 24} Z" />
+            <rect x="${cx - 7}" y="${cy - 25}" width="14" height="7" />
+            <path d="M ${cx - 9} ${cy - 25} L ${cx} ${cy - 34} L ${cx + 9} ${cy - 25} Z" />
+            <line x1="${cx - 12}" y1="${cy - 22}" x2="${cx - 36}" y2="${cy - 30}" stroke-dasharray="3,2" />
+            <line x1="${cx + 12}" y1="${cy - 22}" x2="${cx + 36}" y2="${cy - 30}" stroke-dasharray="3,2" />
+            <line x1="${cx - 8}" y1="${cy + 6}" x2="${cx + 8}" y2="${cy + 6}" />
+            <line x1="${cx - 7}" y1="${cy - 6}" x2="${cx + 7}" y2="${cy - 6}" />
+          </g>`;
+      case "ship":
+        return `
+          <g stroke="${stroke}" fill="none" stroke-width="1.3">
+            <path d="M ${cx - 32} ${cy + 14} L ${cx + 32} ${cy + 14} L ${cx + 22} ${cy + 26} L ${cx - 22} ${cy + 26} Z" />
+            <line x1="${cx - 6}" y1="${cy + 14}" x2="${cx - 6}" y2="${cy - 28}" />
+            <line x1="${cx + 10}" y1="${cy + 14}" x2="${cx + 10}" y2="${cy - 20}" />
+            <path d="M ${cx - 6} ${cy - 26} Q ${cx - 26} ${cy - 8} ${cx - 6} ${cy + 8} Z" />
+            <path d="M ${cx + 10} ${cy - 18} Q ${cx + 28} ${cy - 4} ${cx + 10} ${cy + 9} Z" />
+            <path d="M ${cx - 36} ${cy + 30} Q ${cx - 18} ${cy + 25} ${cx} ${cy + 30} T ${cx + 36} ${cy + 30}" />
+          </g>`;
+      case "mountains":
+        return `
+          <g stroke="${stroke}" fill="none" stroke-width="1.3">
+            <path d="M ${cx - 38} ${cy + 24} L ${cx - 12} ${cy - 22} L ${cx + 8} ${cy + 14}" />
+            <path d="M ${cx - 6} ${cy + 24} L ${cx + 16} ${cy - 26} L ${cx + 38} ${cy + 24}" />
+            <path d="M ${cx - 19} ${cy - 10} L ${cx - 12} ${cy - 7} L ${cx - 6} ${cy - 11}" />
+            <path d="M ${cx + 9} ${cy - 12} L ${cx + 16} ${cy - 9} L ${cx + 23} ${cy - 13}" />
+            <line x1="${cx - 40}" y1="${cy + 24}" x2="${cx + 40}" y2="${cy + 24}" />
+          </g>`;
+      case "oak":
+        return `
+          <g stroke="${stroke}" fill="none" stroke-width="1.3">
+            <path d="M ${cx - 5} ${cy + 28} L ${cx - 3} ${cy + 4} L ${cx + 3} ${cy + 4} L ${cx + 5} ${cy + 28}" />
+            <path d="M ${cx - 28} ${cy + 6} C ${cx - 36} ${cy - 12} ${cx - 18} ${cy - 32} ${cx} ${cy - 28} C ${cx + 18} ${cy - 32} ${cx + 36} ${cy - 12} ${cx + 28} ${cy + 6} Z" />
+            <path d="M ${cx - 16} ${cy - 10} Q ${cx} ${cy - 20} ${cx + 16} ${cy - 10}" />
+            <line x1="${cx - 32}" y1="${cy + 28}" x2="${cx + 32}" y2="${cy + 28}" />
+          </g>`;
+      case "compass":
+        return `
+          <g stroke="${stroke}" fill="none" stroke-width="1.2">
+            <circle cx="${cx}" cy="${cy}" r="28" />
+            <circle cx="${cx}" cy="${cy}" r="22" stroke-dasharray="2,2" />
+            <polygon points="${cx},${cy - 32} ${cx + 6},${cy - 6} ${cx + 32},${cy} ${cx + 6},${cy + 6} ${cx},${cy + 32} ${cx - 6},${cy + 6} ${cx - 32},${cy} ${cx - 6},${cy - 6}" />
+            <circle cx="${cx}" cy="${cy}" r="4" />
+          </g>`;
+      case "sunrise":
+      default:
+        return `
+          <g stroke="${stroke}" fill="none" stroke-width="1.3">
+            <path d="M ${cx - 20} ${cy + 8} A 20 20 0 0 1 ${cx + 20} ${cy + 8}" />
+            <line x1="${cx}" y1="${cy - 16}" x2="${cx}" y2="${cy - 28}" />
+            <line x1="${cx - 16}" y1="${cy - 10}" x2="${cx - 25}" y2="${cy - 19}" />
+            <line x1="${cx + 16}" y1="${cy - 10}" x2="${cx + 25}" y2="${cy - 19}" />
+            <line x1="${cx - 24}" y1="${cy + 2}" x2="${cx - 35}" y2="${cy + 2}" />
+            <line x1="${cx + 24}" y1="${cy + 2}" x2="${cx + 35}" y2="${cy + 2}" />
+            <line x1="${cx - 38}" y1="${cy + 8}" x2="${cx + 38}" y2="${cy + 8}" />
+            <path d="M ${cx - 34} ${cy + 16} Q ${cx} ${cy + 12} ${cx + 34} ${cy + 16}" />
+            <path d="M ${cx - 28} ${cy + 24} Q ${cx} ${cy + 20} ${cx + 28} ${cy + 24}" />
+          </g>`;
+    }
+  }
+
+  function buildThemeMark(cx, cy, stroke, isDojo) {
+    if (isDojo) {
+      // Four-point star mark
+      return `<polygon points="${cx},${cy - 11} ${cx + 3},${cy - 3} ${cx + 11},${cy} ${cx + 3},${cy + 3} ${cx},${cy + 11} ${cx - 3},${cy + 3} ${cx - 11},${cy} ${cx - 3},${cy - 3}" fill="none" stroke="${stroke}" stroke-width="1.3" />`;
+    }
+    // Deep-sea anchor mark
+    return `
+      <g stroke="${stroke}" fill="none" stroke-width="1.3">
+        <circle cx="${cx}" cy="${cy - 8}" r="2.5" />
+        <line x1="${cx}" y1="${cy - 5.5}" x2="${cx}" y2="${cy + 9}" />
+        <line x1="${cx - 6}" y1="${cy - 2}" x2="${cx + 6}" y2="${cy - 2}" />
+        <path d="M ${cx - 8} ${cy + 4} Q ${cx} ${cy + 12} ${cx + 8} ${cy + 4}" />
+      </g>`;
+  }
+
+  function generateBillSVG(dollars, side, theme, kidName) {
+    const pal = BILL_PALETTES[dollars] || BILL_PALETTES[1];
+    const isDojo = theme === "dojo";
+    const w = 560;
+    const h = 240;
+    const micro = "NOT LEGAL TENDER · FOR PRACTICE ONLY · FUN MONEY · ";
+
+    const cornerRosettes = [
+      [44, 42], [w - 44, 42], [44, h - 42], [w - 44, h - 42]
+    ].map(([cx, cy]) => `
+      ${buildGuillocheRose(cx, cy, 24, 15, 16, pal.primary, 0.65)}
+      <text x="${cx}" y="${cy + 7}" text-anchor="middle" font-family="Cinzel, Times New Roman, Georgia, serif" font-weight="700" font-size="21" fill="${pal.primary}">${dollars}</text>
+    `).join("");
+
+    const centerContent = side === "front" ? `
+      <ellipse cx="280" cy="122" rx="76" ry="56" fill="${pal.tint}" stroke="${pal.primary}" stroke-width="2" />
+      <ellipse cx="280" cy="122" rx="71" ry="51" fill="none" stroke="${pal.secondary}" stroke-width="0.9" stroke-dasharray="3,2" />
+      ${buildVignetteArt(pal.motif, 280, 122, pal.primary)}
+      <text x="280" y="34" text-anchor="middle" font-family="Cinzel, Times New Roman, Georgia, serif" font-weight="700" font-size="16" letter-spacing="3" fill="${pal.primary}">iFARLEY'S BANK</text>
+      <text x="280" y="48" text-anchor="middle" font-family="Cinzel, Times New Roman, Georgia, serif" font-weight="600" font-size="8.5" letter-spacing="1.6" fill="${pal.secondary}">FUN MONEY · NOT LEGAL TENDER · FOR PRACTICE ONLY</text>
+      <text x="280" y="206" text-anchor="middle" font-family="Cinzel, Times New Roman, Georgia, serif" font-weight="700" font-size="18" letter-spacing="3" fill="${pal.primary}">${pal.word} DOLLARS</text>
+      <text x="122" y="72" text-anchor="middle" font-family="monospace" font-weight="700" font-size="10.5" fill="#8b261d">${pal.serial}</text>
+      <text x="438" y="182" text-anchor="middle" font-family="monospace" font-weight="700" font-size="10.5" fill="#8b261d">${pal.serial}</text>
+      ${buildThemeMark(122, 134, pal.primary, isDojo)}
+      ${buildThemeMark(438, 108, pal.primary, isDojo)}
+    ` : `
+      ${buildGuillocheRose(280, 120, 68, 42, 24, pal.primary, 0.55)}
+      <ellipse cx="280" cy="120" rx="54" ry="42" fill="${pal.tint}" stroke="${pal.primary}" stroke-width="1.6" />
+      ${buildVignetteArt(pal.motif, 280, 120, pal.primary)}
+      <text x="124" y="132" text-anchor="middle" font-family="Cinzel, Times New Roman, Georgia, serif" font-weight="700" font-size="44" fill="${pal.primary}">${dollars}</text>
+      <text x="436" y="132" text-anchor="middle" font-family="Cinzel, Times New Roman, Georgia, serif" font-weight="700" font-size="44" fill="${pal.primary}">${dollars}</text>
+      <text x="280" y="34" text-anchor="middle" font-family="Cinzel, Times New Roman, Georgia, serif" font-weight="700" font-size="14" letter-spacing="2.5" fill="${pal.primary}">${(kidName || "KID").toUpperCase()}'S FUN MONEY</text>
+      <text x="280" y="206" text-anchor="middle" font-family="Cinzel, Times New Roman, Georgia, serif" font-weight="700" font-size="10" letter-spacing="1.8" fill="${pal.secondary}">NOT LEGAL TENDER · FOR PRACTICE ONLY</text>
+    `;
+
+    return `
+      <svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+        <defs>
+          <radialGradient id="paperWear" cx="50%" cy="50%" r="65%">
+            <stop offset="0%" stop-color="#fbf8ef" />
+            <stop offset="78%" stop-color="${pal.tint}" />
+            <stop offset="100%" stop-color="#dcd4be" />
+          </radialGradient>
+        </defs>
+        <rect x="0" y="0" width="${w}" height="${h}" rx="10" fill="url(#paperWear)" />
+        ${buildUnderprint(w, h, pal.primary, isDojo)}
+        <!-- Double-line border -->
+        <rect x="10" y="10" width="${w - 20}" height="${h - 20}" rx="6" fill="none" stroke="${pal.primary}" stroke-width="2.2" />
+        <rect x="16" y="16" width="${w - 32}" height="${h - 32}" rx="4" fill="none" stroke="${pal.primary}" stroke-width="0.9" />
+        ${buildSineBorder(w, h, 20, pal.secondary, isDojo)}
+        <!-- Microprint strip -->
+        <text x="280" y="14.5" text-anchor="middle" font-family="monospace" font-size="5.2" fill="${pal.primary}" opacity="0.78">${micro.repeat(4)}</text>
+        <text x="280" y="${h - 11.5}" text-anchor="middle" font-family="monospace" font-size="5.2" fill="${pal.primary}" opacity="0.78">${micro.repeat(4)}</text>
+        <!-- Security fibers -->
+        <path d="M 95 45 Q 104 52 112 43" stroke="#991b1b" stroke-width="0.8" fill="none" opacity="0.45" />
+        <path d="M 442 192 Q 454 184 462 194" stroke="#1e3a8a" stroke-width="0.8" fill="none" opacity="0.45" />
+        <path d="M 178 188 Q 186 196 196 187" stroke="#991b1b" stroke-width="0.8" fill="none" opacity="0.45" />
+        <path d="M 372 52 Q 382 44 390 55" stroke="#1e3a8a" stroke-width="0.8" fill="none" opacity="0.45" />
+        <!-- Fold creases -->
+        <line x1="${w / 2}" y1="6" x2="${w / 2}" y2="${h - 6}" stroke="#000" stroke-width="1" opacity="0.09" />
+        <line x1="6" y1="${h / 2}" x2="${w - 6}" y2="${h / 2}" stroke="#000" stroke-width="1" opacity="0.09" />
+        ${cornerRosettes}
+        ${centerContent}
+      </svg>`;
+  }
+
+  function generateCoinSVG(cents) {
+    const isCopper = cents === 1;
+    const isRidged = cents === 25 || cents === 10;
+    const fillMain = isCopper ? "#c87d55" : "#cfd5dc";
+    const fillInner = isCopper ? "#b86b43" : "#bcc4cd";
+    const strokeDark = isCopper ? "#6d381d" : "#4b5563";
+    const size = 96;
+    const c = size / 2;
+
+    let ridges = "";
+    if (isRidged) {
+      for (let i = 0; i < 48; i++) {
+        const a = (i / 48) * Math.PI * 2;
+        const x1 = c + 44 * Math.cos(a);
+        const y1 = c + 44 * Math.sin(a);
+        const x2 = c + 47 * Math.cos(a);
+        const y2 = c + 47 * Math.sin(a);
+        ridges += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${strokeDark}" stroke-width="1.2" />`;
+      }
+    }
+
+    return `
+      <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+        ${ridges}
+        <circle cx="${c}" cy="${c}" r="44" fill="${fillMain}" stroke="${strokeDark}" stroke-width="2.2" />
+        <circle cx="${c}" cy="${c}" r="38" fill="${fillInner}" stroke="${strokeDark}" stroke-width="1" />
+        <circle cx="${c}" cy="${c}" r="34" fill="none" stroke="${strokeDark}" stroke-width="1.2" stroke-dasharray="1.5,2.5" />
+        <text x="${c}" y="22" text-anchor="middle" font-family="Cinzel, Times New Roman, Georgia, serif" font-weight="700" font-size="6.5" letter-spacing="1" fill="${strokeDark}">iFARLEY'S BANK</text>
+        <text x="${c}" y="55" text-anchor="middle" font-family="Cinzel, Times New Roman, Georgia, serif" font-weight="700" font-size="25" fill="${strokeDark}">${cents}</text>
+        <text x="${c}" y="70" text-anchor="middle" font-family="Cinzel, Times New Roman, Georgia, serif" font-weight="700" font-size="7.5" letter-spacing="1.2" fill="${strokeDark}">CENTS</text>
+      </svg>`;
+  }
+
+  function svgToDataURL(svg) {
+    return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg.trim());
+  }
+
+  function getBillImage(cents, side, theme, kidName) {
+    const dollars = Math.round(cents / 100);
+    const key = `${dollars}_${side}_${theme}_${side === "back" ? kidName : ""}`;
+    if (billImageCache.has(key)) return billImageCache.get(key);
+    const svg = generateBillSVG(dollars, side, theme, kidName);
+    const fallbackUrl = svgToDataURL(svg);
+    billImageCache.set(key, fallbackUrl);
+
+    // Rasterize once onto offscreen canvas for 60fps flat bitmap compositing
+    try {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = 560;
+        canvas.height = 240;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0);
+          billImageCache.set(key, canvas.toDataURL("image/png"));
+        }
+      };
+      img.src = fallbackUrl;
+    } catch (_) {}
+
+    return fallbackUrl;
+  }
+
+  function getCoinImage(cents) {
+    if (coinImageCache.has(cents)) return coinImageCache.get(cents);
+    const url = svgToDataURL(generateCoinSVG(cents));
+    coinImageCache.set(cents, url);
+    return url;
+  }
+
+  // ============================================================
+  // 4. STATE & PERSISTENCE (localStorage)
+  // ============================================================
+  const STORAGE_KEY = "fun_money_wallet_v1";
+
+  function defaultState() {
+    const nowIso = new Date().toISOString();
+    return {
+      parentPin: "1234",
+      soundEnabled: true,
+      activeKidId: "everest",
+      kids: [
+        {
+          id: "everest",
+          name: "Everest",
+          level: 1,
+          theme: "deep-sea",
+          balanceCents: 5738,
+          updatedAt: nowIso,
+          prevBalanceCents: 5738,
+          prevUpdatedAt: nowIso,
+          unseenChange: false
+        },
+        {
+          id: "brother",
+          name: "Orion",
+          level: 2,
+          theme: "dojo",
+          balanceCents: 8465,
+          updatedAt: nowIso,
+          prevBalanceCents: 8465,
+          prevUpdatedAt: nowIso,
+          unseenChange: false
+        }
+      ]
+    };
+  }
+
+  let storageFailed = false;
+  let state = loadState();
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return defaultState();
+      const parsed = JSON.parse(raw);
+      if (!parsed || !Array.isArray(parsed.kids) || parsed.kids.length === 0) {
+        return defaultState();
+      }
+      return parsed;
+    } catch (_) {
+      storageFailed = true;
+      return defaultState();
+    }
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      storageFailed = false;
+    } catch (_) {
+      storageFailed = true;
+    }
+  }
+
+  // Ephemeral UI / Preview state (NEVER persisted)
+  const ui = {
+    view: "wad", // "wad" | "counter"
+    countedBillCount: 0,
+    dragProgress: 0, // 0..1 while pulling a bill up
+    isDragging: false,
+    replayAnim: false,
+    preview: null,
+    // preview = null OR
+    // { type: "send", sender: "Grandma", addCents: 2500 } OR
+    // { type: "buy", itemName: "Headphones", priceCents: 3499, trayPieces: [], wrongPicks: 0, showMeHint: false, paid: false, tenderPieces: [], changePieces: [], guessInput: "", guessResult: null, lastActivity: Date.now() }
+    modal: null
+    // modal = null OR
+    // { type: "pin", purpose: "setBalance" | "settings", input: "", error: false }
+    // { type: "setBalance", input: "", statusMsg: "" }
+    // { type: "settings", errorMsg: "" }
+    // { type: "sendModal", sender: "Grandma", amountCents: 2500, customInput: "" }
+    // { type: "buyModal", itemName: "Headphones", priceCents: 3499, customName: "", customPrice: "" }
+  };
+
+  function getActiveKid() {
+    return state.kids.find(k => k.id === state.activeKidId) || state.kids[0];
+  }
+
+  function getEffectiveBalanceCents(kid) {
+    if (!ui.preview) return kid.balanceCents;
+    if (ui.preview.type === "send") return kid.balanceCents + ui.preview.addCents;
+    if (ui.preview.type === "buy" && ui.preview.paid) {
+      return kid.balanceCents - ui.preview.priceCents;
+    }
+    return kid.balanceCents;
+  }
+
+  // Idle timer for "Show me" in cashier game
+  setInterval(() => {
+    if (
+      ui.preview &&
+      ui.preview.type === "buy" &&
+      !ui.preview.paid &&
+      !ui.preview.showMeHint &&
+      Date.now() - ui.preview.lastActivity >= 16000
+    ) {
+      ui.preview.showMeHint = true;
+      render();
+    }
+  }, 2000);
+
+  // ============================================================
+  // 5. ACTIONS & GAME LOGIC
+  // ============================================================
+  function switchKid(kidId) {
+    state.activeKidId = kidId;
+    ui.preview = null;
+    ui.countedBillCount = 0;
+    ui.dragProgress = 0;
+    const kid = getActiveKid();
+    if (kid.unseenChange) {
+      ui.view = "counter";
+      ui.replayAnim = true;
+      kid.unseenChange = false;
+      saveState();
+    }
+    render();
+  }
+
+  function switchView(view) {
+    ui.view = view;
+    ui.dragProgress = 0;
+    render();
+  }
+
+  function exitPreview() {
+    ui.preview = null;
+    ui.countedBillCount = 0;
+    render();
+  }
+
+  function countNextBill() {
+    const kid = getActiveKid();
+    const { bills } = breakdownCents(getEffectiveBalanceCents(kid));
+    if (ui.countedBillCount < bills.length) {
+      ui.countedBillCount++;
+      ui.dragProgress = 0;
+      playPaperRiffle();
+      triggerHaptic(14);
+      render();
+    }
+  }
+
+  function uncountLastBill() {
+    if (ui.countedBillCount > 0) {
+      ui.countedBillCount--;
+      ui.dragProgress = 0;
+      playPaperRiffle();
+      triggerHaptic(10);
+      render();
+    }
+  }
+
+  // "What if" -> Someone's sending money
+  function openSendModal() {
+    ui.modal = { type: "sendModal", sender: "Grandma", amountCents: 2500, customInput: "" };
+    render();
+  }
+
+  function startSendPreview(sender, addCents) {
+    if (!addCents || addCents <= 0) return;
+    ui.modal = null;
+    ui.preview = { type: "send", sender, addCents };
+    ui.view = "counter";
+    ui.replayAnim = true;
+    playPaperRiffle();
+    render();
+  }
+
+  // "What if" -> I want something (Cashier game)
+  const PRESET_ITEMS = [
+    { name: "Headphones", priceCents: 3499 },
+    { name: "LEGO Dragon Set", priceCents: 4999 },
+    { name: "Graphic Novel", priceCents: 1499 },
+    { name: "Soccer Ball", priceCents: 2450 },
+    { name: "Ice Cream Cone", priceCents: 475 },
+    { name: "Board Game", priceCents: 2995 }
+  ];
+
+  function openBuyModal() {
+    ui.modal = { type: "buyModal", itemName: "Headphones", priceCents: 3499, customName: "", customPrice: "" };
+    render();
+  }
+
+  function startBuyPreview(itemName, priceCents) {
+    if (!priceCents || priceCents <= 0) return;
+    ui.modal = null;
+    ui.view = "counter";
+    ui.preview = {
+      type: "buy",
+      itemName: itemName || "Item",
+      priceCents,
+      trayPieces: [],
+      wrongPicks: 0,
+      showMeHint: false,
+      paid: false,
+      tenderPieces: [],
+      changePieces: [],
+      guessInput: "",
+      guessResult: null,
+      lastActivity: Date.now()
+    };
+    render();
+  }
+
+  function addPieceToTray(denom) {
+    const p = ui.preview;
+    if (!p || p.type !== "buy" || p.paid) return;
+    const kid = getActiveKid();
+    if (kid.level === 1 && denom < 100) return; // Level 1 picks bills only
+
+    const { bills, coins } = breakdownCents(kid.balanceCents);
+    const walletAll = [...bills, ...coins];
+    const inWallet = walletAll.filter(x => x === denom).length;
+    const inTray = p.trayPieces.filter(x => x === denom).length;
+    if (inTray >= inWallet) return;
+
+    const prevSum = sumPieces(p.trayPieces);
+    p.trayPieces.push(denom);
+    p.lastActivity = Date.now();
+
+    // Check if pick is unneeded (already covered price before adding) or wrong
+    const natural = computeNaturalTender(bills, coins, p.priceCents, kid.level);
+    const naturalCount = natural.pieces.filter(x => x === denom).length;
+    if (prevSum >= p.priceCents || inTray + 1 > naturalCount) {
+      p.wrongPicks++;
+      if (p.wrongPicks >= 2) p.showMeHint = true;
+    }
+
+    if (denom >= 100) playPaperRiffle();
+    else playCoinClink();
+    triggerHaptic(10);
+    render();
+  }
+
+  function removeTrayPieceAt(index) {
+    const p = ui.preview;
+    if (!p || p.type !== "buy" || p.paid) return;
+    p.trayPieces.splice(index, 1);
+    p.lastActivity = Date.now();
+    triggerHaptic(8);
+    render();
+  }
+
+  function triggerShowMe() {
+    const p = ui.preview;
+    if (!p || p.type !== "buy" || p.paid) return;
+    const kid = getActiveKid();
+    const { bills, coins } = breakdownCents(kid.balanceCents);
+    const natural = computeNaturalTender(bills, coins, p.priceCents, kid.level);
+    if (natural.possible) {
+      p.trayPieces = [...natural.pieces];
+      p.showMeHint = true;
+      p.lastActivity = Date.now();
+      playPaperRiffle();
+      render();
+    }
+  }
+
+  function executeCashierPay() {
+    const p = ui.preview;
+    if (!p || p.type !== "buy" || p.paid) return;
+    const traySum = sumPieces(p.trayPieces);
+    if (traySum < p.priceCents) return;
+
+    const changeCents = traySum - p.priceCents;
+    const changeBreakdown = breakdownCents(changeCents);
+    p.paid = true;
+    p.tenderPieces = [...p.trayPieces];
+    p.changePieces = [...changeBreakdown.bills, ...changeBreakdown.coins];
+    p.guessInput = "";
+    p.guessResult = null;
+    playPaperRiffle();
+    triggerHaptic(18);
+    render();
+  }
+
+  function submitLevel2Guess() {
+    const p = ui.preview;
+    if (!p || p.type !== "buy" || !p.paid) return;
+    const expectedChange = sumPieces(p.tenderPieces) - p.priceCents;
+    const parsed = parseDollarInput(p.guessInput || "0");
+    if (parsed === null) return;
+    if (parsed === expectedChange) {
+      p.guessResult = { correct: true, guessedCents: parsed, actualCents: expectedChange };
+      triggerHaptic(15);
+    } else {
+      p.guessResult = { correct: false, guessedCents: parsed, actualCents: expectedChange };
+    }
+    render();
+  }
+
+  // Parent PIN & Balance Update
+  function openPinPrompt(purpose) {
+    ui.modal = { type: "pin", purpose, input: "", error: false };
+    render();
+  }
+
+  function handlePinDigit(digit) {
+    const m = ui.modal;
+    if (!m || m.type !== "pin") return;
+    if (digit === "back") {
+      m.input = m.input.slice(0, -1);
+      m.error = false;
+      render();
+      return;
+    }
+    if (m.input.length >= 4) return;
+    m.input += digit;
+    if (m.input.length === 4) {
+      if (m.input === state.parentPin) {
+        if (m.purpose === "setBalance") {
+          ui.modal = { type: "setBalance", input: "", statusMsg: "" };
+        } else {
+          ui.modal = { type: "settings", errorMsg: "" };
+        }
+      } else {
+        m.error = true;
+        triggerHaptic(60);
+        render();
+        setTimeout(() => {
+          if (ui.modal && ui.modal.type === "pin") {
+            ui.modal.input = "";
+            ui.modal.error = false;
+            render();
+          }
+        }, 420);
+        return;
+      }
+    }
+    render();
+  }
+
+  function handleSetBalanceKey(key) {
+    const m = ui.modal;
+    if (!m || m.type !== "setBalance") return;
+    m.statusMsg = "";
+    if (key === "back") {
+      m.input = m.input.slice(0, -1);
+    } else if (key === ".") {
+      if (!m.input.includes(".")) {
+        m.input = m.input === "" ? "0." : m.input + ".";
+      }
+    } else {
+      // Digit 0-9
+      const parts = m.input.split(".");
+      if (parts.length === 2 && parts[1].length >= 2) return;
+      const candidate = m.input + key;
+      const parsed = parseDollarInput(candidate);
+      if (parsed !== null && parsed <= MAX_CENTS) {
+        m.input = candidate;
+      }
+    }
+    render();
+  }
+
+  function saveNewKidBalance(explicitCents = null) {
+    const m = ui.modal;
+    const kid = getActiveKid();
+    const newCents = explicitCents !== null ? explicitCents : parseDollarInput(m && m.input ? m.input : "0");
+    if (newCents === null) return;
+
+    if (newCents === kid.balanceCents) {
+      if (m) m.statusMsg = "Same balance — nothing changed.";
+      render();
+      return;
+    }
+
+    kid.prevBalanceCents = kid.balanceCents;
+    kid.prevUpdatedAt = kid.updatedAt;
+    kid.balanceCents = newCents;
+    kid.updatedAt = new Date().toISOString();
+    kid.unseenChange = false;
+    saveState();
+
+    ui.modal = null;
+    ui.preview = null;
+    ui.countedBillCount = 0;
+    ui.view = "counter";
+    ui.replayAnim = true;
+    playPaperRiffle();
+    render();
+  }
+
+  // ============================================================
+  // 6. WAD GESTURE CONTROLLER (Pointer Events + Angle/Velocity)
+  // ============================================================
+  let activePointer = null;
+
+  function attachWadGestures(arenaEl) {
+    if (!arenaEl) return;
+
+    arenaEl.addEventListener("pointerdown", (e) => {
+      unlockGesture();
+      if (activePointer !== null) return;
+      const kid = getActiveKid();
+      const { bills } = breakdownCents(getEffectiveBalanceCents(kid));
+      if (bills.length === 0) return;
+
+      activePointer = {
+        id: e.pointerId,
+        startX: e.clientX,
+        startY: e.clientY,
+        lastY: e.clientY,
+        startTime: performance.now(),
+        moved: false
+      };
+      try { arenaEl.setPointerCapture(e.pointerId); } catch (_) {}
+    });
+
+    arenaEl.addEventListener("pointermove", (e) => {
+      if (!activePointer || e.pointerId !== activePointer.id) return;
+      const dx = e.clientX - activePointer.startX;
+      const dy = e.clientY - activePointer.startY;
+      activePointer.lastY = e.clientY;
+      if (Math.hypot(dx, dy) > 8) activePointer.moved = true;
+
+      const kid = getActiveKid();
+      const { bills } = breakdownCents(getEffectiveBalanceCents(kid));
+
+      // Upward pull (dy < 0) previews peeling the top uncounted bill
+      if (dy < 0 && ui.countedBillCount < bills.length) {
+        const progress = Math.min(1, Math.max(0, -dy / 135));
+        ui.isDragging = true;
+        ui.dragProgress = progress;
+        updateWadLiveTransform(progress);
+      } else {
+        ui.dragProgress = 0;
+        updateWadLiveTransform(0);
+      }
+    });
+
+    function finishPointer(e, cancelled) {
+      if (!activePointer || e.pointerId !== activePointer.id) return;
+      const ptr = activePointer;
+      activePointer = null;
+      ui.isDragging = false;
+
+      if (cancelled) {
+        ui.dragProgress = 0;
+        render();
+        return;
+      }
+
+      const dx = e.clientX - ptr.startX;
+      const dy = e.clientY - ptr.startY;
+      const dist = Math.hypot(dx, dy);
+      const dt = Math.max(1, performance.now() - ptr.startTime);
+      const vy = dy / dt; // px per ms
+
+      const kid = getActiveKid();
+      const { bills } = breakdownCents(getEffectiveBalanceCents(kid));
+
+      // Quick tap counts next bill
+      if (!ptr.moved && dist < 10 && dt < 350) {
+        ui.dragProgress = 0;
+        if (ui.countedBillCount < bills.length) {
+          countNextBill();
+        } else {
+          render();
+        }
+        return;
+      }
+
+      // Check angle from vertical upward (0 deg = straight up, 90 deg = horizontal, 180 deg = straight down)
+      const angleFromUp = Math.atan2(Math.abs(dx), -dy) * (180 / Math.PI);
+
+      // Swipe UP to count: requires upward angle < 75 deg and either sufficient pull (>= 62px) or quick flick
+      if (dy < -42 && angleFromUp <= 75 && (dy <= -68 || vy <= -0.42)) {
+        ui.dragProgress = 0;
+        if (ui.countedBillCount < bills.length) {
+          countNextBill();
+          return;
+        }
+      }
+
+      // Swipe DOWN to un-count last bill
+      const angleFromDown = Math.atan2(Math.abs(dx), dy) * (180 / Math.PI);
+      if (dy > 48 && angleFromDown <= 75 && (dy >= 72 || vy >= 0.42)) {
+        ui.dragProgress = 0;
+        if (ui.countedBillCount > 0) {
+          uncountLastBill();
+          return;
+        }
+      }
+
+      // Otherwise settle back without counting
+      ui.dragProgress = 0;
+      render();
+    }
+
+    arenaEl.addEventListener("pointerup", (e) => finishPointer(e, false));
+    arenaEl.addEventListener("pointercancel", (e) => finishPointer(e, true));
+  }
+
+  function updateWadLiveTransform(progress) {
+    const topCard = document.querySelector(".wad-bill-card[data-top-uncounted='1']");
+    const readoutEl = document.querySelector(".wad-count-main");
+    if (!topCard) return;
+
+    // Bend lower half up & over past 90 degrees toward viewer
+    const rotateX = progress * 155;
+    const translateY = -progress * 96;
+    const scale = 1 - progress * 0.08;
+    topCard.style.transform = `translate3d(0, ${translateY.toFixed(1)}px, 0) rotateX(${rotateX.toFixed(1)}deg) scale(${scale.toFixed(3)})`;
+
+    // Swap front/back image past 90 degrees
+    const img = topCard.querySelector("img");
+    if (img) {
+      const targetSrc = progress > 0.58 ? topCard.dataset.backSrc : topCard.dataset.frontSrc;
+      if (img.src !== targetSrc) img.src = targetSrc;
+    }
+
+    // Tentative gold readout while mid-flip
+    if (readoutEl) {
+      const kid = getActiveKid();
+      const { bills } = breakdownCents(getEffectiveBalanceCents(kid));
+      const baseSum = sumPieces(bills.slice(0, ui.countedBillCount));
+      const nextBill = bills[ui.countedBillCount] || 0;
+      if (progress > 0.08 && nextBill > 0) {
+        readoutEl.textContent = formatMoney(baseSum + nextBill, { omitZeroCents: true }) + "…";
+        readoutEl.classList.add("tentative");
+      } else {
+        readoutEl.classList.remove("tentative");
+      }
+    }
+  }
+
+  // ============================================================
+  // 7. RENDERING
+  // ============================================================
+  function render() {
+    const kid = getActiveKid();
+    document.body.setAttribute("data-theme", kid.theme);
+
+    const effectiveCents = getEffectiveBalanceCents(kid);
+    const { bills, coins } = breakdownCents(effectiveCents);
+    const coinsTotal = sumPieces(coins);
+
+    // Clamp countedBillCount if balance changed
+    if (ui.countedBillCount > bills.length) {
+      ui.countedBillCount = bills.length;
+    }
+
+    const app = document.getElementById("app");
+    let html = "";
+
+    if (storageFailed) {
+      html += `<div class="storage-warning">Storage unavailable — changes will not persist after closing.</div>`;
+    }
+
+    // Active Preview Striped Banner
+    if (ui.preview) {
+      const label = ui.preview.type === "send"
+        ? `PRETEND · ${escapeHtml(ui.preview.sender)} sends ${formatMoney(ui.preview.addCents, { omitZeroCents: true })}`
+        : `PRETEND · Cashier game: ${escapeHtml(ui.preview.itemName)}`;
+      html += `
+        <div class="preview-banner">
+          <div class="preview-banner-text">${label}</div>
+          <button class="btn-exit-preview" data-action="exit-preview">Back to real money</button>
+        </div>`;
+    }
+
+    // Top Kid Tabs + Settings Lock
+    html += `
+      <div class="top-bar">
+        <div class="kid-tabs" role="tablist">
+          ${state.kids.map(k => `
+            <button class="kid-tab ${k.id === kid.id ? "active" : ""}" data-action="switch-kid" data-kid-id="${k.id}">
+              <span>${escapeHtml(k.name)}</span>
+              <span class="kid-level-badge">L${k.level}</span>
+            </button>
+          `).join("")}
+        </div>
+        <button class="icon-btn" aria-label="Parent settings" data-action="open-settings">🔒</button>
+      </div>`;
+
+    // Wallet Header Card
+    const isSendPreview = ui.preview && ui.preview.type === "send";
+    const balanceDisplay = isSendPreview
+      ? `<span class="big-balance preview-shift">${formatMoney(kid.balanceCents)} → ${formatMoney(effectiveCents)}</span>`
+      : `<span class="big-balance">${formatMoney(effectiveCents)}</span>`;
+
+    const updatedText = `By parent · updated ${formatRelativeDay(kid.updatedAt)} · Crew sync coming later`;
+
+    html += `
+      <div class="wallet-header">
+        <div class="balance-row">
+          <button class="balance-trigger" data-action="open-set-balance" ${ui.preview ? "disabled" : ""}>
+            ${balanceDisplay}
+            ${!ui.preview ? `<span class="set-pill">✎ Set</span>` : ""}
+          </button>
+          <div class="view-toggle" role="tablist">
+            <button class="${ui.view === "wad" ? "active" : ""}" data-action="switch-view" data-view="wad">Wad</button>
+            <button class="${ui.view === "counter" ? "active" : ""}" data-action="switch-view" data-view="counter">Counter</button>
+          </div>
+        </div>
+        <div class="meta-row">
+          <span>${updatedText}</span>
+        </div>
+      </div>`;
+
+    // "What changed" banner (when not in preview and previous balance differs)
+    const diffCents = kid.balanceCents - kid.prevBalanceCents;
+    if (!ui.preview && diffCents !== 0) {
+      const sinceDay = formatRelativeDay(kid.prevUpdatedAt);
+      const changeText = diffCents > 0
+        ? `${formatMoney(diffCents, { omitZeroCents: true })} came in since ${sinceDay}`
+        : `${formatMoney(Math.abs(diffCents), { omitZeroCents: true })} spent since ${sinceDay}`;
+      html += `
+        <div class="change-banner">
+          <span>${changeText}</span>
+          <button class="btn-replay" data-action="replay-change">Replay</button>
+        </div>`;
+    }
+
+    // Main Stage
+    html += `<div class="stage">`;
+    if (ui.view === "wad") {
+      html += renderWadView(kid, bills, coins, coinsTotal, effectiveCents);
+    } else {
+      html += renderCounterView(kid, bills, coins, effectiveCents);
+    }
+    html += `</div>`;
+
+    // Bottom "What if" buttons
+    html += `
+      <div class="bottom-actions">
+        <button class="action-btn" data-action="open-send">Someone's sending money</button>
+        <button class="action-btn primary" data-action="open-buy">I want something</button>
+      </div>`;
+
+    app.innerHTML = html;
+
+    // Render modal outside #app if open
+    const existingModal = document.querySelector(".modal-backdrop");
+    if (existingModal) existingModal.remove();
+    if (ui.modal) {
+      const modalHtml = renderModal(kid);
+      if (modalHtml) {
+        document.body.insertAdjacentHTML("beforeend", modalHtml);
+      }
+    }
+
+    // Attach Wad gestures if active
+    if (ui.view === "wad") {
+      attachWadGestures(document.getElementById("wad-arena"));
+    }
+
+    // Clear one-shot replay animation flag after paint
+    if (ui.replayAnim) {
+      requestAnimationFrame(() => { ui.replayAnim = false; });
+    }
+  }
+
+  function renderWadView(kid, bills, coins, coinsTotal, effectiveCents) {
+    if (effectiveCents === 0) {
+      return `
+        <div class="wad-view">
+          <div class="empty-state">
+            <div class="empty-state-title">$0.00 right now</div>
+            <div class="empty-state-body">When money comes in, the bills show up here.</div>
+          </div>
+        </div>`;
+    }
+
+    const countedBills = bills.slice(0, ui.countedBillCount);
+    const uncountedBills = bills.slice(ui.countedBillCount);
+    const countedBillsSum = sumPieces(countedBills);
+    const allBillsCounted = uncountedBills.length === 0;
+
+    let readoutMain = "";
+    let readoutSub = "";
+    if (bills.length === 0) {
+      readoutMain = `Coins only: ${formatMoney(coinsTotal, { shortUnderDollar: true })}`;
+      readoutSub = `${coins.length} coin${coins.length === 1 ? "" : "s"} in your pocket`;
+    } else if (allBillsCounted) {
+      readoutMain = `That's all! ${formatMoney(effectiveCents)}`;
+      readoutSub = coinsTotal > 0
+        ? `${formatMoney(countedBillsSum, { omitZeroCents: true })} in bills + ${formatMoney(coinsTotal, { shortUnderDollar: true })} in coins`
+        : `${bills.length} bill${bills.length === 1 ? "" : "s"} counted`;
+    } else if (ui.countedBillCount === 0) {
+      readoutMain = `Swipe up or tap to count`;
+      readoutSub = `${bills.length} bill${bills.length === 1 ? "" : "s"}${coinsTotal > 0 ? ` + ${formatMoney(coinsTotal, { shortUnderDollar: true })} in coins` : ""}`;
+    } else {
+      readoutMain = `${formatMoney(countedBillsSum, { omitZeroCents: true })}…`;
+      readoutSub = `${ui.countedBillCount} of ${bills.length} bills counted`;
+    }
+
+    // Counted pile (face-down backs at top)
+    const countedHtml = countedBills.slice(-4).map((denom, idx) => {
+      const backSrc = getBillImage(denom, "back", kid.theme, kid.name);
+      const rot = ((idx % 3) - 1) * 3;
+      const offset = idx * 2;
+      return `<div class="counted-card" style="background-image:url('${backSrc}'); transform: translateY(${offset}px) rotate(${rot}deg);"></div>`;
+    }).join("");
+
+    // Uncounted stack (largest on top, visible stack edges underneath)
+    const visibleStack = uncountedBills.slice(0, 6);
+    const stackHtml = visibleStack.map((denom, idx) => {
+      const frontSrc = getBillImage(denom, "front", kid.theme, kid.name);
+      const backSrc = getBillImage(denom, "back", kid.theme, kid.name);
+      const zIndex = visibleStack.length - idx;
+      const yOff = idx * 6;
+      const scale = 1 - idx * 0.018;
+      const isTop = idx === 0;
+      return `
+        <div
+          class="wad-bill-card"
+          data-top-uncounted="${isTop ? "1" : "0"}"
+          data-front-src="${frontSrc}"
+          data-back-src="${backSrc}"
+          style="z-index:${zIndex}; transform: translate3d(0, ${yOff}px, 0) scale(${scale});"
+        >
+          <img class="wad-bill-face" src="${frontSrc}" alt="$${denom / 100} bill" draggable="false" />
+        </div>`;
+    }).reverse().join("");
+
+    // Coin pile beside wad
+    const uniqueCoinDenoms = [...new Set(coins)];
+    const coinPileHtml = coinsTotal > 0 ? `
+      <div class="wad-coin-cluster">
+        <div class="wad-coin-icons">
+          ${uniqueCoinDenoms.map(c => `<img src="${getCoinImage(c)}" alt="${c}¢ coin" />`).join("")}
+        </div>
+        <span class="wad-coin-label">+${formatMoney(coinsTotal, { shortUnderDollar: true })}</span>
+      </div>` : `<div></div>`;
+
+    return `
+      <div class="wad-view">
+        <div class="wad-readout">
+          <div class="wad-count-main">${readoutMain}</div>
+          <div class="wad-count-sub">${readoutSub}</div>
+        </div>
+        <div class="wad-arena" id="wad-arena">
+          <div class="counted-pile-zone">
+            ${countedBills.length === 0 ? `<span class="counted-pile-label">Counted bills land here</span>` : countedHtml}
+          </div>
+          <div class="wad-stack-wrapper">
+            ${stackHtml}
+          </div>
+        </div>
+        <div class="wad-bottom-strip">
+          <span class="wad-hint">${ui.countedBillCount > 0 ? "Swipe down to un-count" : "Flick up to peel a bill"}</span>
+          ${coinPileHtml}
+        </div>
+      </div>`;
+  }
+
+  function renderCounterView(kid, bills, coins, effectiveCents) {
+    const isBuy = ui.preview && ui.preview.type === "buy";
+    const buy = isBuy ? ui.preview : null;
+
+    if (effectiveCents === 0 && !isBuy) {
+      return `
+        <div class="counter-view">
+          <div class="empty-state">
+            <div class="empty-state-title">$0.00 right now</div>
+            <div class="empty-state-body">When money comes in, your bills and coins line up on the counter here.</div>
+          </div>
+        </div>`;
+    }
+
+    // Track how many of each denomination are currently in the cashier tray so they leave the counter visually
+    const trayCounts = {};
+    if (buy && !buy.paid) {
+      for (const d of buy.trayPieces) {
+        trayCounts[d] = (trayCounts[d] || 0) + 1;
+      }
+    }
+
+    // Determine added/spent highlight counts if replayAnim is active
+    let addedCounts = {};
+    let spentBills = [];
+    if (ui.replayAnim) {
+      if (ui.preview && ui.preview.type === "send") {
+        const addedBreakdown = breakdownCents(ui.preview.addCents);
+        for (const d of addedBreakdown.bills) addedCounts[d] = (addedCounts[d] || 0) + 1;
+      } else if (kid.balanceCents > kid.prevBalanceCents) {
+        const diffBreakdown = breakdownCents(kid.balanceCents - kid.prevBalanceCents);
+        for (const d of diffBreakdown.bills) addedCounts[d] = (addedCounts[d] || 0) + 1;
+      } else if (kid.balanceCents < kid.prevBalanceCents) {
+        const spentBreakdown = breakdownCents(kid.prevBalanceCents - kid.balanceCents);
+        spentBills = spentBreakdown.bills;
+      }
+    }
+
+    let html = `<div class="counter-view">`;
+
+    // Cashier Game Panel at top of counter if active
+    if (buy) {
+      const canAfford = kid.balanceCents >= buy.priceCents;
+      if (!canAfford) {
+        const shortBy = buy.priceCents - kid.balanceCents;
+        html += `
+          <div class="cashier-panel">
+            <div class="cashier-item-title">${escapeHtml(buy.itemName)} · ${formatMoney(buy.priceCents)}</div>
+            <div class="cashier-status">Not yet! You have ${formatMoney(kid.balanceCents)}, it costs ${formatMoney(buy.priceCents)}. Save ${formatMoney(shortBy)} more.</div>
+          </div>`;
+      } else if (!buy.paid) {
+        const traySum = sumPieces(buy.trayPieces);
+        const remaining = Math.max(0, buy.priceCents - traySum);
+        const covered = traySum >= buy.priceCents;
+        html += `
+          <div class="cashier-panel">
+            <div class="cashier-header">
+              <span class="cashier-item-title">${escapeHtml(buy.itemName)} · ${formatMoney(buy.priceCents)}</span>
+              <span class="cashier-status">${formatMoney(traySum)} of ${formatMoney(buy.priceCents)}</span>
+            </div>
+            <div class="wad-count-sub" style="margin:0;">
+              ${covered ? "Ready to pay! Tap a piece in the tray to take it back." : `Need ${formatMoney(remaining)} more — tap bills${kid.level === 2 ? " or coins" : ""} below`}
+            </div>
+            <div class="tray-pieces">
+              ${buy.trayPieces.length === 0
+                ? `<span class="wad-hint">Handing to the cashier tray (empty)</span>`
+                : buy.trayPieces.map((d, idx) => `
+                  <button class="tray-piece-btn" data-action="remove-tray" data-idx="${idx}">
+                    ${d >= 100 ? `$${d / 100}` : `${d}¢`} ✕
+                  </button>
+                `).join("")}
+            </div>
+            <div class="cashier-actions">
+              <button class="btn-pay" data-action="cashier-pay" ${covered ? "" : "disabled"}>
+                ${covered ? `Pay ${formatMoney(traySum)}` : "Pay"}
+              </button>
+              ${buy.showMeHint ? `<button class="btn-show-me" data-action="show-me">Show me</button>` : ""}
+            </div>
+          </div>`;
+      } else {
+        // Paid! Show change calculation (or Level 2 guess keypad first)
+        const tenderSum = sumPieces(buy.tenderPieces);
+        const changeSum = sumPieces(buy.changePieces);
+        const leftSum = kid.balanceCents - buy.priceCents;
+        const needsLevel2Guess = kid.level === 2 && changeSum > 0 && !buy.guessResult;
+
+        if (needsLevel2Guess) {
+          html += `
+            <div class="cashier-panel">
+              <div class="cashier-item-title">You handed ${formatMoney(tenderSum)} for ${formatMoney(buy.priceCents)}</div>
+              <div class="cashier-status">Level 2 Challenge: How much change comes back?</div>
+              <div class="keypad-display">$${escapeHtml(buy.guessInput || "0.00")}</div>
+              <div class="keypad-grid">
+                ${["1","2","3","4","5","6","7","8","9",".","0","back"].map(k => `
+                  <button class="key-btn" data-action="guess-key" data-key="${k}">${k === "back" ? "⌫" : k}</button>
+                `).join("")}
+              </div>
+              <button class="btn-pay" data-action="submit-guess">Check my change</button>
+            </div>`;
+        } else {
+          const guessBanner = buy.guessResult
+            ? (buy.guessResult.correct
+              ? `<div style="color:var(--success);font-weight:800;">Nailed it! ${formatMoney(buy.guessResult.actualCents)} change.</div>`
+              : `<div style="color:var(--gold);font-weight:800;">Close! You guessed ${formatMoney(buy.guessResult.guessedCents)} — exact change is ${formatMoney(buy.guessResult.actualCents)}.</div>`)
+            : "";
+          html += `
+            <div class="cashier-panel">
+              ${guessBanner}
+              <div class="cashier-status">${formatMoney(tenderSum)} − ${formatMoney(buy.priceCents)} = ${formatMoney(changeSum)} back</div>
+              <div style="font-size:16px;font-weight:800;">You'd have ${formatMoney(leftSum)} left.</div>
+              ${buy.changePieces.length > 0 ? `
+                <div class="tray-pieces">
+                  ${buy.changePieces.map(d => `<span class="tray-piece-btn" style="cursor:default;">+${d >= 100 ? `$${d / 100}` : `${d}¢`}</span>`).join("")}
+                </div>` : ""}
+            </div>`;
+        }
+      }
+    }
+
+    // Group bills by denomination
+    for (const denom of BILL_DENOMS) {
+      const totalOfDenom = bills.filter(b => b === denom).length;
+      const inTray = trayCounts[denom] || 0;
+      const visibleCount = Math.max(0, totalOfDenom - inTray);
+      if (visibleCount === 0) continue;
+
+      const frontSrc = getBillImage(denom, "front", kid.theme, kid.name);
+      const rowTotal = visibleCount * denom;
+      const highlightNew = addedCounts[denom] || 0;
+
+      let fanHtml = "";
+      for (let i = 0; i < visibleCount; i++) {
+        const rot = ((i % 5) - 2) * 1.4;
+        const isNew = ui.replayAnim && i >= visibleCount - highlightNew;
+        fanHtml += `
+          <div
+            class="counter-bill-item ${isNew ? "anim-new" : ""}"
+            style="transform: rotate(${rot}deg);"
+            data-action="pick-piece"
+            data-denom="${denom}"
+          >
+            <img src="${frontSrc}" alt="$${denom / 100} bill" />
+          </div>`;
+      }
+
+      html += `
+        <div class="counter-row">
+          <div class="counter-bills-fan">${fanHtml}</div>
+          <div class="counter-row-label">×${visibleCount} · ${formatMoney(rowTotal, { omitZeroCents: true })}</div>
+        </div>`;
+    }
+
+    // Spent bills fly-off animation row if replayAnim
+    if (ui.replayAnim && spentBills.length > 0) {
+      html += `
+        <div class="counter-row" style="opacity:0.85;">
+          <div class="counter-bills-fan">
+            ${spentBills.slice(0, 5).map(denom => `
+              <div class="counter-bill-item anim-spent">
+                <img src="${getBillImage(denom, "front", kid.theme, kid.name)}" alt="Spent bill" />
+              </div>
+            `).join("")}
+          </div>
+          <div class="counter-row-label" style="color:var(--danger);">Spent</div>
+        </div>`;
+    }
+
+    // Group coins below
+    const visibleCoinsByDenom = COIN_DENOMS.map(denom => {
+      const total = coins.filter(c => c === denom).length;
+      const inTray = trayCounts[denom] || 0;
+      return { denom, count: Math.max(0, total - inTray) };
+    }).filter(g => g.count > 0);
+
+    if (visibleCoinsByDenom.length > 0) {
+      html += `<div class="counter-coins-section">`;
+      for (const g of visibleCoinsByDenom) {
+        const coinImg = getCoinImage(g.denom);
+        const canTapCoin = isBuy && !buy.paid && kid.level === 2;
+        html += `
+          <div
+            class="coin-group-card ${isBuy && kid.level === 1 ? "disabled" : ""}"
+            ${canTapCoin ? `data-action="pick-piece" data-denom="${g.denom}"` : ""}
+          >
+            <div class="coin-stack-mini">
+              ${Array.from({ length: Math.min(g.count, 5) }).map(() => `<img src="${coinImg}" alt="${g.denom}¢ coin" />`).join("")}
+            </div>
+            <span class="coin-group-label">${g.count} × ${g.denom}¢</span>
+          </div>`;
+      }
+      html += `</div>`;
+    }
+
+    html += `</div>`;
+    return html;
+  }
+
+  function renderModal(kid) {
+    const m = ui.modal;
+    if (!m) return "";
+
+    if (m.type === "pin") {
+      return `
+        <div class="modal-backdrop" data-action="close-modal-backdrop">
+          <div class="modal-sheet ${m.error ? "shake" : ""}" onclick="event.stopPropagation()">
+            <div class="modal-title-row">
+              <div class="modal-title">Parent PIN</div>
+              <button class="btn-secondary" data-action="close-modal">Cancel</button>
+            </div>
+            <div class="wad-count-sub">Enter 4-digit parent PIN</div>
+            <div class="pin-dots">
+              ${[0, 1, 2, 3].map(i => `<div class="pin-dot ${i < m.input.length ? "filled" : ""}"></div>`).join("")}
+            </div>
+            <div class="keypad-grid">
+              ${["1","2","3","4","5","6","7","8","9","","0","back"].map(k =>
+                k === ""
+                  ? `<div></div>`
+                  : `<button class="key-btn" data-action="pin-key" data-key="${k}">${k === "back" ? "⌫" : k}</button>`
+              ).join("")}
+            </div>
+          </div>
+        </div>`;
+    }
+
+    if (m.type === "setBalance") {
+      const displayVal = m.input === "" ? "0.00" : m.input;
+      return `
+        <div class="modal-backdrop" data-action="close-modal-backdrop">
+          <div class="modal-sheet" onclick="event.stopPropagation()">
+            <div class="modal-title-row">
+              <div class="modal-title">Set ${escapeHtml(kid.name)}'s Balance</div>
+              <button class="btn-secondary" data-action="set-zero">Set to $0</button>
+            </div>
+            <div class="wad-count-sub">Was ${formatMoney(kid.balanceCents)} · updated ${formatRelativeDay(kid.updatedAt)}</div>
+            <div class="keypad-display">$${escapeHtml(displayVal)}</div>
+            ${m.statusMsg ? `<div style="color:var(--gold);font-size:14px;font-weight:700;">${escapeHtml(m.statusMsg)}</div>` : ""}
+            <div class="keypad-grid">
+              ${["1","2","3","4","5","6","7","8","9",".","0","back"].map(k => `
+                <button class="key-btn" data-action="bal-key" data-key="${k}">${k === "back" ? "⌫" : k}</button>
+              `).join("")}
+            </div>
+            <div class="row-2">
+              <button class="btn-secondary" data-action="close-modal">Cancel</button>
+              <button class="btn-primary-modal" data-action="save-balance">Save</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    if (m.type === "sendModal") {
+      const senders = ["Grandma", "Grandpa", "Birthday", "Chores", "Tooth Fairy", "Aunt & Uncle"];
+      const amounts = [500, 1000, 2000, 2500, 5000];
+      return `
+        <div class="modal-backdrop" data-action="close-modal-backdrop">
+          <div class="modal-sheet" onclick="event.stopPropagation()">
+            <div class="modal-title-row">
+              <div class="modal-title">Someone's sending money</div>
+              <button class="btn-secondary" data-action="close-modal">Cancel</button>
+            </div>
+            <div class="wad-count-sub">Who is it from?</div>
+            <div class="chip-grid">
+              ${senders.map(s => `
+                <button class="choice-chip ${m.sender === s ? "selected" : ""}" data-action="pick-sender" data-sender="${s}">${s}</button>
+              `).join("")}
+            </div>
+            <div class="wad-count-sub">How much?</div>
+            <div class="chip-grid">
+              ${amounts.map(a => `
+                <button class="choice-chip ${!m.customInput && m.amountCents === a ? "selected" : ""}" data-action="pick-send-amt" data-amt="${a}">${formatMoney(a, { omitZeroCents: true })}</button>
+              `).join("")}
+            </div>
+            <div class="form-field">
+              <label>Or custom amount ($)</label>
+              <input class="form-input" id="custom-send-input" inputmode="decimal" placeholder="e.g. 15.50" value="${escapeHtml(m.customInput)}" />
+            </div>
+            <button class="btn-primary-modal" data-action="confirm-send">Preview money arriving</button>
+          </div>
+        </div>`;
+    }
+
+    if (m.type === "buyModal") {
+      return `
+        <div class="modal-backdrop" data-action="close-modal-backdrop">
+          <div class="modal-sheet" onclick="event.stopPropagation()">
+            <div class="modal-title-row">
+              <div class="modal-title">I want something</div>
+              <button class="btn-secondary" data-action="close-modal">Cancel</button>
+            </div>
+            <div class="chip-grid" style="grid-template-columns: repeat(2, 1fr);">
+              ${PRESET_ITEMS.map(item => `
+                <button
+                  class="choice-chip ${!m.customPrice && m.itemName === item.name ? "selected" : ""}"
+                  data-action="pick-buy-item"
+                  data-name="${escapeHtml(item.name)}"
+                  data-price="${item.priceCents}"
+                >
+                  ${escapeHtml(item.name)} · ${formatMoney(item.priceCents)}
+                </button>
+              `).join("")}
+            </div>
+            <div class="row-2">
+              <div class="form-field">
+                <label>Custom item</label>
+                <input class="form-input" id="custom-buy-name" placeholder="Toy or book" value="${escapeHtml(m.customName)}" />
+              </div>
+              <div class="form-field">
+                <label>Price ($)</label>
+                <input class="form-input" id="custom-buy-price" inputmode="decimal" placeholder="12.99" value="${escapeHtml(m.customPrice)}" />
+              </div>
+            </div>
+            <button class="btn-primary-modal" data-action="confirm-buy">Go to cashier</button>
+          </div>
+        </div>`;
+    }
+
+    if (m.type === "settings") {
+      return `
+        <div class="modal-backdrop" data-action="close-modal-backdrop">
+          <div class="modal-sheet" onclick="event.stopPropagation()">
+            <div class="modal-title-row">
+              <div class="modal-title">Parent Settings</div>
+              <button class="btn-secondary" data-action="close-modal">Done</button>
+            </div>
+            ${state.kids.map((k, idx) => `
+              <div style="padding:10px;border-radius:14px;background:rgba(0,0,0,0.22);display:flex;flex-direction:column;gap:8px;">
+                <div style="font-weight:800;font-size:15px;">Child ${idx + 1}</div>
+                <div class="row-2">
+                  <div class="form-field">
+                    <label>Name</label>
+                    <input class="form-input" data-setting-name="${k.id}" value="${escapeHtml(k.name)}" />
+                  </div>
+                  <div class="form-field">
+                    <label>Balance ($)</label>
+                    <input class="form-input" inputmode="decimal" data-setting-bal="${k.id}" value="${(k.balanceCents / 100).toFixed(2)}" />
+                  </div>
+                </div>
+                <div class="row-2">
+                  <div class="form-field">
+                    <label>Level</label>
+                    <select class="form-input" data-setting-level="${k.id}">
+                      <option value="1" ${k.level === 1 ? "selected" : ""}>Level 1 (Bills only)</option>
+                      <option value="2" ${k.level === 2 ? "selected" : ""}>Level 2 (Bills + coins + change guess)</option>
+                    </select>
+                  </div>
+                  <div class="form-field">
+                    <label>Theme</label>
+                    <select class="form-input" data-setting-theme="${k.id}">
+                      <option value="deep-sea" ${k.theme === "deep-sea" ? "selected" : ""}>Deep Sea</option>
+                      <option value="dojo" ${k.theme === "dojo" ? "selected" : ""}>Dojo</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            `).join("")}
+
+            <div class="row-2">
+              <div class="form-field">
+                <label>Parent PIN (4 digits)</label>
+                <input class="form-input" id="setting-pin" inputmode="numeric" maxlength="4" value="${escapeHtml(state.parentPin)}" />
+              </div>
+              <div class="form-field">
+                <label>Paper & Coin Sound</label>
+                <button class="btn-secondary" data-action="toggle-sound">${state.soundEnabled ? "Sound: ON" : "Sound: OFF"}</button>
+              </div>
+            </div>
+
+            ${m.errorMsg ? `<div style="color:var(--danger);font-size:14px;font-weight:700;">${escapeHtml(m.errorMsg)}</div>` : ""}
+
+            <div class="row-2">
+              <button class="btn-secondary" data-action="reset-demo">Reset Demo</button>
+              <button class="btn-primary-modal" data-action="save-settings">Save Settings</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    return "";
+  }
+
+  function escapeHtml(str) {
+    return String(str ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  // ============================================================
+  // 8. GLOBAL EVENT DELEGATION
+  // ============================================================
+  document.addEventListener("click", (e) => {
+    unlockGesture();
+    const target = e.target.closest("[data-action]");
+    if (!target) return;
+    const action = target.dataset.action;
+
+    switch (action) {
+      case "switch-kid":
+        switchKid(target.dataset.kidId);
+        break;
+      case "switch-view":
+        switchView(target.dataset.view);
+        break;
+      case "exit-preview":
+        exitPreview();
+        break;
+      case "replay-change":
+        ui.view = "counter";
+        ui.replayAnim = true;
+        render();
+        break;
+      case "open-set-balance":
+        if (!ui.preview) openPinPrompt("setBalance");
+        break;
+      case "open-settings":
+        openPinPrompt("settings");
+        break;
+      case "open-send":
+        openSendModal();
+        break;
+      case "open-buy":
+        openBuyModal();
+        break;
+      case "close-modal":
+      case "close-modal-backdrop":
+        ui.modal = null;
+        render();
+        break;
+      case "pin-key":
+        handlePinDigit(target.dataset.key);
+        break;
+      case "bal-key":
+        handleSetBalanceKey(target.dataset.key);
+        break;
+      case "set-zero":
+        saveNewKidBalance(0);
+        break;
+      case "save-balance":
+        saveNewKidBalance();
+        break;
+      case "pick-sender":
+        if (ui.modal && ui.modal.type === "sendModal") {
+          ui.modal.sender = target.dataset.sender;
+          render();
+        }
+        break;
+      case "pick-send-amt":
+        if (ui.modal && ui.modal.type === "sendModal") {
+          ui.modal.amountCents = parseInt(target.dataset.amt, 10);
+          ui.modal.customInput = "";
+          render();
+        }
+        break;
+      case "confirm-send": {
+        const customEl = document.getElementById("custom-send-input");
+        const customVal = customEl ? customEl.value.trim() : "";
+        let cents = ui.modal.amountCents;
+        if (customVal) {
+          const parsed = parseDollarInput(customVal);
+          if (parsed === null || parsed <= 0) {
+            if (customEl) customEl.classList.add("invalid");
+            return;
+          }
+          cents = parsed;
+        }
+        startSendPreview(ui.modal.sender, cents);
+        break;
+      }
+      case "pick-buy-item":
+        if (ui.modal && ui.modal.type === "buyModal") {
+          ui.modal.itemName = target.dataset.name;
+          ui.modal.priceCents = parseInt(target.dataset.price, 10);
+          ui.modal.customPrice = "";
+          render();
+        }
+        break;
+      case "confirm-buy": {
+        const nameEl = document.getElementById("custom-buy-name");
+        const priceEl = document.getElementById("custom-buy-price");
+        const customPriceStr = priceEl ? priceEl.value.trim() : "";
+        let name = ui.modal.itemName;
+        let price = ui.modal.priceCents;
+        if (customPriceStr) {
+          const parsed = parseDollarInput(customPriceStr);
+          if (parsed === null || parsed <= 0) {
+            if (priceEl) priceEl.classList.add("invalid");
+            return;
+          }
+          price = parsed;
+          name = (nameEl && nameEl.value.trim()) ? nameEl.value.trim() : "Custom Item";
+        }
+        startBuyPreview(name, price);
+        break;
+      }
+      case "pick-piece":
+        addPieceToTray(parseInt(target.dataset.denom, 10));
+        break;
+      case "remove-tray":
+        removeTrayPieceAt(parseInt(target.dataset.idx, 10));
+        break;
+      case "cashier-pay":
+        executeCashierPay();
+        break;
+      case "show-me":
+        triggerShowMe();
+        break;
+      case "guess-key": {
+        const p = ui.preview;
+        if (!p || p.type !== "buy" || !p.paid) return;
+        const k = target.dataset.key;
+        if (k === "back") {
+          p.guessInput = p.guessInput.slice(0, -1);
+        } else if (k === ".") {
+          if (!p.guessInput.includes(".")) p.guessInput = p.guessInput === "" ? "0." : p.guessInput + ".";
+        } else {
+          const parts = p.guessInput.split(".");
+          if (parts.length === 2 && parts[1].length >= 2) return;
+          p.guessInput += k;
+        }
+        render();
+        break;
+      }
+      case "submit-guess":
+        submitLevel2Guess();
+        break;
+      case "toggle-sound":
+        state.soundEnabled = !state.soundEnabled;
+        saveState();
+        render();
+        break;
+      case "reset-demo":
+        state = defaultState();
+        saveState();
+        ui.modal = null;
+        ui.preview = null;
+        ui.countedBillCount = 0;
+        render();
+        break;
+      case "save-settings": {
+        let valid = true;
+        const updates = [];
+        for (const k of state.kids) {
+          const nameInput = document.querySelector(`[data-setting-name="${k.id}"]`);
+          const balInput = document.querySelector(`[data-setting-bal="${k.id}"]`);
+          const levelSel = document.querySelector(`[data-setting-level="${k.id}"]`);
+          const themeSel = document.querySelector(`[data-setting-theme="${k.id}"]`);
+
+          const parsedBal = parseDollarInput(balInput.value);
+          if (parsedBal === null) {
+            balInput.classList.add("invalid");
+            valid = false;
+          } else {
+            balInput.classList.remove("invalid");
+          }
+          updates.push({
+            kid: k,
+            name: (nameInput.value.trim() || k.name),
+            balanceCents: parsedBal,
+            level: parseInt(levelSel.value, 10) === 2 ? 2 : 1,
+            theme: themeSel.value === "dojo" ? "dojo" : "deep-sea"
+          });
+        }
+        const pinInput = document.getElementById("setting-pin");
+        const pinVal = pinInput ? pinInput.value.trim() : "";
+        if (!/^\d{4}$/.test(pinVal)) {
+          if (pinInput) pinInput.classList.add("invalid");
+          valid = false;
+        }
+        if (!valid) {
+          ui.modal.errorMsg = "Please check highlighted fields (valid dollar amount & 4-digit PIN).";
+          render();
+          return;
+        }
+        for (const u of updates) {
+          u.kid.name = u.name;
+          u.kid.level = u.level;
+          u.kid.theme = u.theme;
+          if (u.balanceCents !== u.kid.balanceCents) {
+            u.kid.prevBalanceCents = u.kid.balanceCents;
+            u.kid.prevUpdatedAt = u.kid.updatedAt;
+            u.kid.balanceCents = u.balanceCents;
+            u.kid.updatedAt = new Date().toISOString();
+          }
+        }
+        state.parentPin = pinVal;
+        saveState();
+        ui.modal = null;
+        ui.preview = null;
+        ui.countedBillCount = 0;
+        render();
+        break;
+      }
+    }
+  });
+
+  // Live validation for settings balance inputs
+  document.addEventListener("input", (e) => {
+    const el = e.target;
+    if (el && el.dataset && el.dataset.settingBal) {
+      const parsed = parseDollarInput(el.value);
+      el.classList.toggle("invalid", parsed === null);
+    }
+  });
+
+  // ============================================================
+  // 9. AUTOMATED VERIFICATION HOOK (window.__FM)
+  // ============================================================
+  window.__FM = {
+    breakdownCents,
+    computeNaturalTender,
+    parseDollarInput,
+    formatMoney,
+    getState: () => JSON.parse(JSON.stringify(state)),
+    getUI: () => JSON.parse(JSON.stringify(ui)),
+    actions: {
+      switchKid,
+      switchView,
+      countNextBill,
+      uncountLastBill,
+      startSendPreview,
+      startBuyPreview,
+      addPieceToTray,
+      removeTrayPieceAt,
+      triggerShowMe,
+      executeCashierPay,
+      exitPreview,
+      setKidBalanceDirect: (kidId, cents) => {
+        const k = state.kids.find(x => x.id === kidId);
+        if (!k) return;
+        k.prevBalanceCents = k.balanceCents;
+        k.prevUpdatedAt = k.updatedAt;
+        k.balanceCents = cents;
+        k.updatedAt = new Date().toISOString();
+        saveState();
+        ui.countedBillCount = 0;
+        ui.view = "counter";
+        ui.replayAnim = true;
+        render();
+      }
+    }
+  };
+
+  // Initial render + prewarm bill images
+  render();
+  for (const d of BILL_DENOMS) {
+    getBillImage(d, "front", "deep-sea", "Everest");
+    getBillImage(d, "back", "deep-sea", "Everest");
+    getBillImage(d, "front", "dojo", "Orion");
+    getBillImage(d, "back", "dojo", "Orion");
+  }
+})();
+</script>
+</body>
+</html>

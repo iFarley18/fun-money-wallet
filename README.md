@@ -22,3 +22,6 @@ A visual of each kid's Crew card balance, shown as play money. For now a parent 
 - Lettering on the bills uses Cinzel (SIL Open Font License), embedded as a small subset.
 - Data is saved only in this browser (localStorage). Clearing Chrome's site data resets it.
 - Built as one self-contained `index.html` with no build step.
+
+## Comparison copy
+- `gemini.html` is an unchanged copy of the version another AI made from `GEMINI_BRIEF.md`, kept for side-by-side comparison: https://ifarley18.github.io/fun-money-wallet/gemini.html
