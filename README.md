@@ -1,19 +1,20 @@
 # Fun Money Wallet (web prototype)
 
-A visual of each kid's real Crew card balance, shown as play money. This app never adds, spends or moves real money.
+A visual of each kid's Crew card balance, shown as play money. For now a parent types the balance in (tap the balance, enter the PIN). Crew sync through Plaid is coming later. This app never adds, spends or moves real money.
 
 **Try it:** https://ifarley18.github.io/fun-money-wallet/ (open it in Chrome on your phone)
 
 ## What's in it
 - **Wad view:** a folded wad of bills. Swipe up (or tap) to peel each bill over toward you, like a cashier counting it back. The count climbs as you go. Swipe down to un-count one.
 - **Counter view:** every bill and coin laid flat on a wooden counter, grouped by kind.
-- **What changed:** when the app opens, it shows what changed since last time (for example, "$8 left since Saturday") and those bills fly off the counter. Tap Replay to watch it again.
+- **What changed:** shows what changed since the last balance a parent typed (for example, "$8 spent since Saturday") and those bills fly off the counter. Tap Replay to watch it again.
 - **"Someone's sending money":** preview what the wallet looks like with money from Grandma and others. Nothing is saved.
 - **"I want something":** the kid hands bills to the cashier until the price is covered, then sees the change come back and what would be left. Nothing is saved.
   - Level 1 (about age 7): bills only. The cashier handles the coins.
   - Level 2 (about age 9): bills and coins, and guesses the change before it's shown.
   - "Show me" appears after 2 extra picks or a long pause.
-- **Parent settings** (lock icon): type each kid's Crew balance, name, level and bill theme. **Prototype PIN: 1234** (change it inside).
+- **Set balance** (tap the big balance or its Set button): parent PIN, then a big keypad for dollars and cents ($0 allowed, up to $9,999.99). Saving re-counts the money into the fewest bills and the banner shows what changed since the last balance you typed.
+- **Parent settings** (lock icon): each kid's balance, name, level and bill theme. **Prototype PIN: 1234** (change it inside).
 
 ## Notes
 - The bills are original play money ("iFARLEY'S BANK", marked "not legal tender" and "for practice only"). The engraved look (paper, guilloche, vignettes of a sunrise, compass rose, oak, mountains, ship and lighthouse) is drawn from scratch and doesn't copy U.S. currency or any show's characters.
