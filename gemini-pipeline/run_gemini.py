@@ -34,7 +34,7 @@ def req(method, path, body=None, timeout=900):
         return e.code, {"error": e.read().decode(errors="replace")[:2000]}
 
 def gen(model, body, label):
-    for attempt in range(3):
+    for attempt in range(12):
         code, res = req("POST", f"/models/{model}:generateContent", body)
         if code == 200: break
         print(f"[{label}] HTTP {code}: {res['error'][:500]}")
@@ -42,7 +42,8 @@ def gen(model, body, label):
             body["generationConfig"].pop("thinkingConfig"); continue
         if code == 400 and "imageConfig" in body.get("generationConfig", {}):
             body["generationConfig"].pop("imageConfig"); continue
-        time.sleep(20)
+        if code == 429 and "free_tier" in res["error"]: raise SystemExit(f"{label}: model not on free tier")
+        time.sleep(30)
     else:
         raise SystemExit(f"{label} failed")
     um = res.get("usageMetadata", {})
@@ -77,6 +78,7 @@ def pick_models():
     return chosen
 
 M = pick_models()
+if os.environ.get("TEXT_MODEL"): M["text"] = os.environ["TEXT_MODEL"]
 THINK = {"thinkingConfig": {"thinkingLevel": "high"}}
 
 if "ideate" in STAGES:
@@ -132,10 +134,16 @@ if "code" in STAGES:
     schema = {"type": "OBJECT", "properties": {"files": {"type": "ARRAY", "items": {"type": "OBJECT", "properties": {
         "path": {"type": "STRING"}, "content": {"type": "STRING"}}, "required": ["path", "content"]}}}, "required": ["files"]}
     prompt = (ROOT / "prompt3_code.md").read_text() + "\n\n---\n\n# Your design document\n\n" + concept + "\n\n---\n\n# Generated assets\n\n" + listing
-    res = gen(M["text"], {"contents": [{"role": "user", "parts": [{"text": prompt}]}],
-                          "generationConfig": {"responseMimeType": "application/json", "responseSchema": schema, "maxOutputTokens": 65536, **THINK}}, "code")
-    (OUT / "code_raw.json").write_text(json.dumps(res, indent=2))
-    files = json.loads(text_of(res))["files"]
+    files = None
+    for model, cap in [(M["text"], 32768), ("gemini-4-neon", 65536)]:
+        res = gen(model, {"contents": [{"role": "user", "parts": [{"text": prompt}]}],
+                          "generationConfig": {"responseMimeType": "application/json", "responseSchema": schema, "maxOutputTokens": cap, **THINK}}, f"code:{model}")
+        (OUT / f"code_raw_{model}.json").write_text(json.dumps(res, indent=2))
+        try:
+            files = json.loads(text_of(res))["files"]; (OUT / "code_model.txt").write_text(model); break
+        except Exception as e:
+            print(f"code output from {model} not parseable ({e}); finishReason={[c.get('finishReason') for c in res.get('candidates', [])]}")
+    if files is None: raise SystemExit("code stage failed")
     for f in files:
         rel = pathlib.PurePosixPath(f["path"].lstrip("/"))
         if ".." in rel.parts or (rel.parts and rel.parts[0] == "android"): continue
