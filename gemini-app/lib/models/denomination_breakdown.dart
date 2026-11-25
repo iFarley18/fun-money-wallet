@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 enum DenominationType {
   bill20(2000, true, 'play_bill_20.png', '20', Color(0xFFA855F7)),
   bill10(1000, true, 'play_bill_10.png', '10', Color(0xFFF97316)),

@@ -78,7 +78,7 @@ class _VaultSandboxScreenState extends State<VaultSandboxScreen> {
       final posX = 40.0 + rand.nextDouble() * (_canvasSize.width - 160);
       final posY = 120.0 + rand.nextDouble() * (_canvasSize.height - 280);
       newItems.add(PhysicsItem(
-        id: 'item_$i_${type.name}',
+        id: 'item_${i}_${type.name}',
         type: type,
         position: Offset(posX, posY),
         rotation: (rand.nextDouble() - 0.5) * 0.4,
@@ -284,7 +284,7 @@ class _VaultSandboxScreenState extends State<VaultSandboxScreen> {
   }
 
   Widget _buildTopHUD(KidProfile? active, DenominationBreakdown? breakdown) {
-    final balanceText = active != null ? MoneyBalance(active.balanceCents).toFormattedString() : '$0.00';
+    final balanceText = active != null ? MoneyBalance(active.balanceCents).toFormattedString() : '\$0.00';
     final itemCountText = breakdown != null ? '${breakdown.totalBills} Bills • ${breakdown.totalCoins} Coins' : '0 Items';
 
     return Row(

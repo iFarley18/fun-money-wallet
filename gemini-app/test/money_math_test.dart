@@ -8,12 +8,12 @@ void main() {
       const balance = MoneyBalance(4350);
       expect(balance.totalCents, 4350);
       expect(balance.toDollars(), 43.50);
-      expect(balance.toFormattedString(), '$43.50');
+      expect(balance.toFormattedString(), '\$43.50');
     });
 
     test('Parses dollar string input to integer cents correctly', () {
       expect(MoneyBalance.parseDollarsToCents('43.50'), 4350);
-      expect(MoneyBalance.parseDollarsToCents('$18.25'), 1825);
+      expect(MoneyBalance.parseDollarsToCents('\$18.25'), 1825);
       expect(MoneyBalance.parseDollarsToCents('0.99'), 99);
       expect(MoneyBalance.parseDollarsToCents('100'), 10000);
       expect(MoneyBalance.parseDollarsToCents('invalid'), 0);

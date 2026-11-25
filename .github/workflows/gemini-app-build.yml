@@ -15,6 +15,7 @@ jobs:
         working-directory: gemini-app
         run: |
           flutter create --platforms=android --org com.ifarley --project-name gemini_fun_money .
+          rm -f test/widget_test.dart
           flutter pub get
           flutter analyze --no-fatal-infos --no-fatal-warnings | tee ../analyze.txt || true
           flutter test | tee ../test.txt || true
