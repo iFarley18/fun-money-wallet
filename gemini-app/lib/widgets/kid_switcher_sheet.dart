@@ -15,6 +15,19 @@ class KidSwitcherSheet extends StatelessWidget {
     required this.onSelect,
   });
 
+  static IconData iconForAvatar(String avatarIconName) {
+    switch (avatarIconName) {
+      case 'mountain':
+        return Icons.terrain;
+      case 'maker':
+        return Icons.build;
+      case 'rocket':
+        return Icons.rocket_launch;
+      default:
+        return Icons.shield;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -64,7 +77,7 @@ class KidSwitcherSheet extends StatelessWidget {
                 leading: CircleAvatar(
                   backgroundColor: p.themeColor,
                   child: Icon(
-                    p.avatarIconName == 'rocket' ? Icons.rocket_launch : Icons.shield,
+                    iconForAvatar(p.avatarIconName),
                     color: Colors.black,
                   ),
                 ),

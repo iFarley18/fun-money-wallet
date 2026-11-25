@@ -7,6 +7,7 @@ class KidProfile {
   final Color themeColor;
   final String avatarIconName;
   final String lastUpdatedText;
+  final String moneyThemeId;
 
   const KidProfile({
     required this.id,
@@ -15,6 +16,7 @@ class KidProfile {
     required this.themeColor,
     required this.avatarIconName,
     required this.lastUpdatedText,
+    this.moneyThemeId = 'default',
   });
 
   KidProfile copyWith({
@@ -24,6 +26,7 @@ class KidProfile {
     Color? themeColor,
     String? avatarIconName,
     String? lastUpdatedText,
+    String? moneyThemeId,
   }) {
     return KidProfile(
       id: id ?? this.id,
@@ -32,6 +35,7 @@ class KidProfile {
       themeColor: themeColor ?? this.themeColor,
       avatarIconName: avatarIconName ?? this.avatarIconName,
       lastUpdatedText: lastUpdatedText ?? this.lastUpdatedText,
+      moneyThemeId: moneyThemeId ?? this.moneyThemeId,
     );
   }
 
@@ -42,6 +46,7 @@ class KidProfile {
     'themeColorValue': themeColor.value,
     'avatarIconName': avatarIconName,
     'lastUpdatedText': lastUpdatedText,
+    'moneyThemeId': moneyThemeId,
   };
 
   factory KidProfile.fromJson(Map<String, dynamic> json) => KidProfile(
@@ -51,5 +56,6 @@ class KidProfile {
     themeColor: Color(json['themeColorValue'] as int),
     avatarIconName: json['avatarIconName'] as String,
     lastUpdatedText: json['lastUpdatedText'] as String? ?? 'Set by Parent',
+    moneyThemeId: json['moneyThemeId'] as String? ?? 'default',
   );
 }

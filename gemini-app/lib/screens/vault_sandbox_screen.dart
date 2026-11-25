@@ -60,7 +60,12 @@ class _VaultSandboxScreenState extends State<VaultSandboxScreen> {
     if (profiles.isNotEmpty) {
       setState(() {
         _profiles = profiles;
-        _activeProfile = _activeProfile ?? profiles.first;
+        if (_activeProfile == null) {
+          _activeProfile = profiles.first;
+        } else {
+          final updated = profiles.where((p) => p.id == _activeProfile!.id);
+          _activeProfile = updated.isNotEmpty ? updated.first : profiles.first;
+        }
       });
       _generatePhysicsItems();
     }
@@ -69,20 +74,34 @@ class _VaultSandboxScreenState extends State<VaultSandboxScreen> {
   void _generatePhysicsItems() {
     if (_activeProfile == null || _canvasSize == Size.zero) return;
     final breakdown = DenominationBreakdown.fromCents(_activeProfile!.balanceCents);
-    final list = breakdown.toFlatList();
+    final stacks = breakdown.toVisibleStacks();
+    final scale = PhysicsItem.computeScaleForStacks(stacks, _canvasSize);
     final rand = Random(42);
 
     final newItems = <PhysicsItem>[];
-    for (int i = 0; i < list.length; i++) {
-      final type = list[i];
-      final posX = 40.0 + rand.nextDouble() * (_canvasSize.width - 160);
-      final posY = 120.0 + rand.nextDouble() * (_canvasSize.height - 280);
-      newItems.add(PhysicsItem(
-        id: 'item_${i}_${type.name}',
-        type: type,
-        position: Offset(posX, posY),
-        rotation: (rand.nextDouble() - 0.5) * 0.4,
-      ));
+    int idx = 0;
+    for (final stack in stacks) {
+      final baseSize = PhysicsItem.baseSizeFor(stack.type);
+      final itemW = baseSize.width * scale;
+      final itemH = baseSize.height * scale;
+      final minX = 14.0;
+      final maxX = max(minX, _canvasSize.width - itemW - 14.0);
+      final minY = 122.0;
+      final maxY = max(minY, _canvasSize.height - itemH - 110.0);
+
+      for (int i = 0; i < stack.visibleCount; i++) {
+        final posX = minX + rand.nextDouble() * (maxX - minX);
+        final posY = minY + rand.nextDouble() * (maxY - minY);
+        newItems.add(PhysicsItem(
+          id: 'item_${idx}_${stack.type.name}',
+          type: stack.type,
+          position: Offset(posX, posY),
+          rotation: (rand.nextDouble() - 0.5) * 0.36,
+          scale: scale,
+          stackCount: stack.isCollapsed ? stack.totalCount : 1,
+        ));
+        idx++;
+      }
     }
     setState(() {
       _items = newItems;
@@ -105,10 +124,10 @@ class _VaultSandboxScreenState extends State<VaultSandboxScreen> {
           item.angularVelocity *= 0.90;
 
           // Boundaries bouncing
-          final minX = 10.0;
-          final maxX = _canvasSize.width - item.size.width - 10;
-          final minY = 90.0;
-          final maxY = _canvasSize.height - item.size.height - 110;
+          const minX = 10.0;
+          final maxX = max(minX, _canvasSize.width - item.size.width - 10);
+          const minY = 115.0;
+          final maxY = max(minY, _canvasSize.height - item.size.height - 105);
 
           if (item.position.dx < minX) {
             item.position = Offset(minX, item.position.dy);
@@ -132,27 +151,87 @@ class _VaultSandboxScreenState extends State<VaultSandboxScreen> {
 
   void _tidyStacks() {
     HapticFeedback.heavyImpact();
-    if (_canvasSize == Size.zero) return;
-    final Map<DenominationType, int> counts = {};
-    final double startY = 120;
-    int colIndex = 0;
+    if (_canvasSize == Size.zero || _items.isEmpty) return;
 
-    final Map<DenominationType, double> colXMap = {};
-    final types = DenominationType.values;
-    for (var t in types) {
-      colXMap[t] = 20.0 + (colIndex % 4) * 85.0;
-      if (t.isBill) colIndex++;
+    final Map<DenominationType, List<PhysicsItem>> byType = {};
+    for (final item in _items) {
+      byType.putIfAbsent(item.type, () => []).add(item);
     }
 
+    final billTypes = DenominationType.values
+        .where((t) => t.isBill && byType.containsKey(t))
+        .toList();
+    final coinTypes = DenominationType.values
+        .where((t) => !t.isBill && byType.containsKey(t))
+        .toList();
+
+    final availW = _canvasSize.width - 24.0;
+    const topY = 124.0;
+    final bottomY = _canvasSize.height - 110.0;
+    final totalAvailH = max(160.0, bottomY - topY);
+
+    final billRows = billTypes.isEmpty ? 0 : (billTypes.length / 3).ceil();
+    final hasCoins = coinTypes.isNotEmpty;
+    final coinAreaH = hasCoins ? min(150.0, totalAvailH * (billRows > 0 ? 0.30 : 0.85)) : 0.0;
+    final billAreaH = max(0.0, totalAvailH - coinAreaH - (hasCoins && billRows > 0 ? 16.0 : 0.0));
+
     setState(() {
-      for (var item in _items) {
-        final count = counts[item.type] ?? 0;
-        counts[item.type] = count + 1;
-        final targetX = item.type.isBill ? 25.0 + (types.indexOf(item.type) % 4) * 80 : 30.0 + (types.indexOf(item.type) % 4) * 70;
-        final targetY = startY + (count * 14.0);
-        item.position = Offset(targetX, targetY);
-        item.velocity = Offset.zero;
-        item.rotation = 0;
+      if (billTypes.isNotEmpty) {
+        final rowHeight = billAreaH / billRows;
+        for (int r = 0; r < billRows; r++) {
+          final start = r * 3;
+          final end = min(start + 3, billTypes.length);
+          final rowTypes = billTypes.sublist(start, end);
+          final cols = rowTypes.length;
+          final billW = byType[rowTypes.first]!.first.size.width;
+          final billH = byType[rowTypes.first]!.first.size.height;
+          final gap = min(16.0, max(6.0, (availW - cols * billW) / max(cols + 1, 1)));
+          final rowContentW = cols * billW + (cols - 1) * gap;
+          final startX = 12.0 + max(0.0, (availW - rowContentW) / 2.0);
+          final rowTopY = topY + r * rowHeight;
+          final maxStackDelta = max(0.0, rowHeight - billH - 8.0);
+
+          for (int c = 0; c < cols; c++) {
+            final group = byType[rowTypes[c]]!;
+            final stepY = group.length > 1
+                ? min(12.0, maxStackDelta / (group.length - 1))
+                : 0.0;
+            final x = startX + c * (billW + gap);
+            for (int k = 0; k < group.length; k++) {
+              group[k].position = Offset(x, rowTopY + k * stepY);
+              group[k].velocity = Offset.zero;
+              group[k].angularVelocity = 0;
+              group[k].rotation = 0;
+            }
+          }
+        }
+      }
+
+      if (coinTypes.isNotEmpty) {
+        final cols = coinTypes.length;
+        final maxCoinW = coinTypes
+            .map((t) => byType[t]!.first.size.width)
+            .reduce(max);
+        final gap = min(22.0, max(8.0, (availW - cols * maxCoinW) / max(cols + 1, 1)));
+        final rowContentW = cols * maxCoinW + (cols - 1) * gap;
+        final startX = 12.0 + max(0.0, (availW - rowContentW) / 2.0);
+        final coinTopY = billRows > 0 ? (topY + billAreaH + 14.0) : topY + 20.0;
+        final maxCoinStackDelta = max(0.0, coinAreaH - maxCoinW - 8.0);
+
+        for (int c = 0; c < cols; c++) {
+          final group = byType[coinTypes[c]]!;
+          final coinW = group.first.size.width;
+          final stepY = group.length > 1
+              ? min(10.0, maxCoinStackDelta / (group.length - 1))
+              : 0.0;
+          final x = startX + c * (maxCoinW + gap) + (maxCoinW - coinW) / 2.0;
+          for (int k = 0; k < group.length; k++) {
+            group[k].position = Offset(x, coinTopY + k * stepY);
+            group[k].velocity = Offset.zero;
+            group[k].angularVelocity = 0;
+            group[k].rotation = 0;
+          }
+        }
       }
     });
   }
@@ -197,7 +276,7 @@ class _VaultSandboxScreenState extends State<VaultSandboxScreen> {
     for (var item in _items) {
       final itemRect = item.position & item.size;
       if (trayRect.overlaps(itemRect)) {
-        sum += item.type.cents;
+        sum += item.totalCents;
       }
     }
     return sum;
@@ -318,7 +397,7 @@ class _VaultSandboxScreenState extends State<VaultSandboxScreen> {
             child: Row(
               children: [
                 Icon(
-                  active?.avatarIconName == 'rocket' ? Icons.rocket_launch : Icons.shield,
+                  KidSwitcherSheet.iconForAvatar(active?.avatarIconName ?? 'shield'),
                   color: active?.themeColor ?? Colors.cyan,
                   size: 20,
                 ),
@@ -398,6 +477,62 @@ class _VaultSandboxScreenState extends State<VaultSandboxScreen> {
   }
 
   Widget _buildPhysicsItemWidget(PhysicsItem item) {
+    final themeId = _activeProfile?.moneyThemeId;
+    final coreWidget = item.type.isBill
+        ? PlayBillWidget(
+            type: item.type,
+            themeId: themeId,
+            width: item.size.width,
+            height: item.size.height,
+          )
+        : PlayCoinWidget(
+            type: item.type,
+            themeId: themeId,
+            size: item.size.width,
+          );
+
+    final visual = item.stackCount > 1
+        ? Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned(
+                left: 4,
+                top: 4,
+                child: Opacity(opacity: 0.45, child: coreWidget),
+              ),
+              Positioned(
+                left: 2,
+                top: 2,
+                child: Opacity(opacity: 0.72, child: coreWidget),
+              ),
+              coreWidget,
+              Positioned(
+                top: -6,
+                right: -6,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.amberAccent, width: 1.5),
+                    boxShadow: [
+                      BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 4),
+                    ],
+                  ),
+                  child: Text(
+                    'x${item.stackCount}',
+                    style: GoogleFonts.jetBrainsMono(
+                      color: Colors.amberAccent,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          )
+        : coreWidget;
+
     return Positioned(
       left: item.position.dx,
       top: item.position.dy,
@@ -422,9 +557,7 @@ class _VaultSandboxScreenState extends State<VaultSandboxScreen> {
         },
         child: Transform.rotate(
           angle: item.rotation,
-          child: item.type.isBill
-              ? PlayBillWidget(type: item.type, width: item.size.width, height: item.size.height)
-              : PlayCoinWidget(type: item.type, size: item.size.width),
+          child: visual,
         ),
       ),
     );

@@ -6,7 +6,7 @@ import '../models/kid_profile.dart';
 import 'balance_repository.dart';
 
 class LocalBalanceRepository implements BalanceRepository {
-  static const String _storageKey = 'crew_stash_kid_profiles_v1';
+  static const String _storageKey = 'crew_stash_kid_profiles_v2';
   final SharedPreferences _prefs;
   final StreamController<List<KidProfile>> _controller = StreamController.broadcast();
 
@@ -17,20 +17,22 @@ class LocalBalanceRepository implements BalanceRepository {
     if (raw == null || raw.isEmpty) {
       final defaults = [
         const KidProfile(
-          id: 'kid_leo',
-          name: 'Leo',
+          id: 'kid_everest',
+          name: 'Everest',
           balanceCents: 4350,
           themeColor: Color(0xFFFF6B00),
-          avatarIconName: 'rocket',
-          lastUpdatedText: 'Set by Dad (Brian) on Oct 24, 4:15 PM',
+          avatarIconName: 'mountain',
+          lastUpdatedText: 'Set by Dad (Brian)',
+          moneyThemeId: 'everest_mountain_sports',
         ),
         const KidProfile(
-          id: 'kid_sam',
-          name: 'Sam',
+          id: 'kid_brighton',
+          name: 'Brighton',
           balanceCents: 1825,
           themeColor: Color(0xFF00E5FF),
-          avatarIconName: 'shield',
-          lastUpdatedText: 'Set by Dad (Brian) on Oct 23, 2:10 PM',
+          avatarIconName: 'maker',
+          lastUpdatedText: 'Set by Dad (Brian)',
+          moneyThemeId: 'brighton_maker_tech',
         ),
       ];
       await _saveList(defaults);
