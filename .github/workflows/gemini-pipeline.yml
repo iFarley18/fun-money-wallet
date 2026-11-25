@@ -1,0 +1,44 @@
+name: Gemini design pipeline
+on:
+  push:
+    branches: [gemini-designed-android]
+    paths: ['gemini-pipeline/STAGES']
+permissions:
+  contents: write
+concurrency: gemini-pipeline
+jobs:
+  gemini:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Gemini (key from repo secret, never printed)
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python3 gemini-pipeline/run_gemini.py
+      - name: Commit Gemini's raw output
+        run: |
+          git config user.name "gemini-pipeline-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A gemini-pipeline/out gemini-app || true
+          git diff --cached --quiet || (git commit -m "Gemini output (verbatim): $(cat gemini-pipeline/STAGES)" && git push)
+      - uses: subosito/flutter-action@v2
+        if: hashFiles('gemini-app/pubspec.yaml') != ''
+        with: { channel: stable, cache: true }
+      - name: Build debug APK
+        if: hashFiles('gemini-app/pubspec.yaml') != ''
+        working-directory: gemini-app
+        run: |
+          flutter create --platforms=android --org com.ifarley --project-name gemini_fun_money .
+          flutter pub get
+          flutter analyze --no-fatal-infos --no-fatal-warnings | tee ../analyze.txt || true
+          flutter test | tee ../test.txt || true
+          flutter build apk --debug
+      - uses: actions/upload-artifact@v4
+        if: always() && hashFiles('gemini-app/pubspec.yaml') != ''
+        with:
+          name: gemini-fun-money-debug-apk
+          path: |
+            gemini-app/build/app/outputs/flutter-apk/app-debug.apk
+            analyze.txt
+            test.txt

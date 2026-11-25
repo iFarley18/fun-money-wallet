@@ -1,0 +1,30 @@
+name: Gemini app build
+on:
+  push:
+    branches: [gemini-designed-android]
+    paths: ['gemini-app/**']
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: ${{ hashFiles('gemini-app/pubspec.yaml') != '' || true }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, cache: true }
+      - name: Build debug APK
+        working-directory: gemini-app
+        run: |
+          flutter create --platforms=android --org com.ifarley --project-name gemini_fun_money .
+          flutter pub get
+          flutter analyze --no-fatal-infos --no-fatal-warnings | tee ../analyze.txt || true
+          flutter test | tee ../test.txt || true
+          flutter build apk --debug
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gemini-fun-money-debug-apk
+          path: |
+            gemini-app/build/app/outputs/flutter-apk/app-debug.apk
+            analyze.txt
+            test.txt
