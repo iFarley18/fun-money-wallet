@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 enum DenominationType {
-  bill20(2000, true, 'play_bill_20.png', '20', Color(0xFFA855F7)),
+  bill20(2000, true, 'play_bill_20.webp', '20', Color(0xFFA855F7)),
   bill10(1000, true, 'play_bill_10.png', '10', Color(0xFFF97316)),
   bill5(500, true, 'play_bill_5.png', '5', Color(0xFF3B82F6)),
-  bill1(100, true, 'play_bill_1.png', '1', Color(0xFF2DD4BF)),
-  coin25(25, false, 'play_coin_25.png', '25¢', Color(0xFFF59E0B)),
+  bill1(100, true, 'play_bill_1.webp', '1', Color(0xFF2DD4BF)),
+  coin25(25, false, 'play_coin_25.webp', '25¢', Color(0xFFF59E0B)),
   coin10(10, false, 'play_coin_10.png', '10¢', Color(0xFF94A3B8)),
   coin5(5, false, 'play_coin_5.png', '5¢', Color(0xFFCBD5E1)),
   coin1(1, false, 'play_coin_1.png', '1¢', Color(0xFFB45309));
