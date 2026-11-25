@@ -1,0 +1,77 @@
+{
+  "calls": [
+    {
+      "label": "ideate",
+      "model": "gemini-3.6-flash",
+      "usage": {
+        "promptTokenCount": 950,
+        "candidatesTokenCount": 6562,
+        "totalTokenCount": 9963,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 950
+          }
+        ],
+        "thoughtsTokenCount": 2451,
+        "serviceTier": "standard"
+      },
+      "est_usd": 0.138
+    },
+    {
+      "label": "ideate",
+      "model": "gemini-3.5-flash",
+      "usage": {
+        "promptTokenCount": 950,
+        "candidatesTokenCount": 6093,
+        "totalTokenCount": 12106,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 950
+          }
+        ],
+        "thoughtsTokenCount": 5063,
+        "serviceTier": "standard"
+      },
+      "est_usd": 0.1702
+    },
+    {
+      "label": "assets-extract",
+      "model": "gemini-3.5-flash",
+      "usage": {
+        "promptTokenCount": 6138,
+        "candidatesTokenCount": 1275,
+        "totalTokenCount": 9345,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 6138
+          }
+        ],
+        "thoughtsTokenCount": 1932,
+        "serviceTier": "standard"
+      },
+      "est_usd": 0.0665
+    },
+    {
+      "label": "code:gemini-3.5-flash",
+      "model": "gemini-3.5-flash",
+      "usage": {
+        "promptTokenCount": 6743,
+        "candidatesTokenCount": 18900,
+        "totalTokenCount": 32367,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 6743
+          }
+        ],
+        "thoughtsTokenCount": 6724,
+        "serviceTier": "standard"
+      },
+      "est_usd": 0.4046
+    }
+  ],
+  "est_usd": 0.7793
+}

@@ -1,0 +1,74 @@
+{
+  "assets": [
+    {
+      "filename": "app_icon.png",
+      "purpose": "Android application launch icon.",
+      "aspect_ratio": "1:1",
+      "prompt": "A bold, vibrant 3D app icon featuring a chunky cartoon safe vault door painted in electric teal and cyan, slightly open, with glowing golden play coins and vibrant purple and green toy cash bursting out with energetic motion lines. Ultra-clean graphic design, stylized thick outer lines, modern 3D cartoon render, highly detailed, vibrant colors, isolated on pure black background for easy transparency cutting, zero text, zero realistic money, mobile app icon style, 8k resolution, raytraced lighting.",
+      "transparent": true
+    },
+    {
+      "filename": "hero_mockup.png",
+      "purpose": "High-impact hero marketing presentation mockup of the main app experience.",
+      "aspect_ratio": "16:9",
+      "prompt": "A sleek modern smartphone screen floating in a clean dark studio setup. On the phone screen, a vibrant Flutter app titled \"Crew Stash\" is running, showing a dark teal textured vault surface covered with interactive toy play money\u2014bright violet $20 play bills with comic rockets, turquoise $1 play bills, and polished brass coins piled dynamically with 2D physics. Dynamic floating lighting, rich high-contrast colors, vivid UI elements, clean modern Android layout, high-end promo graphic showcase, photorealistic phone hardware mockup, sharp focus.",
+      "transparent": false
+    },
+    {
+      "filename": "play_bill_1.png",
+      "purpose": "Textural overlay graphics for the $1 Play Cash bill.",
+      "aspect_ratio": "2:1",
+      "prompt": "A flat 2D graphic design of a toy play money bill worth 1 dollar. Color scheme is bright mint cyan and dark green. Features a cartoon cosmic rocket ship emblem in the center oval. The text explicitly reads \"CREW PLAY CASH\" at the top and \"NOT LEGAL TENDER\" at the bottom. Large chunky number \"1\" in all four corners. Stylized geometric border patterns, thick clean comic vector illustration style, vibrant play currency, transparent background, isolated, vector quality, crisp edges.",
+      "transparent": true
+    },
+    {
+      "filename": "play_bill_5.png",
+      "purpose": "Textural overlay graphics for the $5 Play Cash bill.",
+      "aspect_ratio": "2:1",
+      "prompt": "A flat 2D graphic design of a novelty play money bill worth 5 dollars. Color scheme is vivid electric cobalt blue with deep navy accents. Features a stylized cartoon lightning bolt badge in the central medallion. The text reads \"CREW PLAY CASH\" across the top and \"NOT LEGAL TENDER\" along the bottom margin. Large bold number \"5\" in each corner. Futuristic comic border graphics, isolated on transparent background, clean vector artwork, vibrant toy cash design.",
+      "transparent": true
+    },
+    {
+      "filename": "play_bill_10.png",
+      "purpose": "Textural overlay graphics for the $10 Play Cash bill.",
+      "aspect_ratio": "2:1",
+      "prompt": "A flat 2D graphic design of a stylized novelty toy bill worth 10 dollars. Color palette is bright sunset orange and rust brown trim. Features a playful cartoon solar shield emblem in the center circle. Contains explicit text reading \"CREW PLAY CASH\" at the top and \"NOT LEGAL TENDER\" below. Prominent bold number \"10\" on all corners. Dynamic graphic arts style, clean vector line art, transparent background, crisp isolated graphics.",
+      "transparent": true
+    },
+    {
+      "filename": "play_bill_20.png",
+      "purpose": "Textural overlay graphics for the $20 Play Cash bill.",
+      "aspect_ratio": "2:1",
+      "prompt": "A flat 2D graphic design of a toy play bill worth 20 dollars. Color theme is vibrant cosmic neon violet and deep purple trim. Features a cool mechanical robot mask icon inside the central ring. Features clear wording \"CREW PLAY CASH\" and \"NOT LEGAL TENDER\". Large chunky \"20\" digits in every corner. Energetic arcade style, bold outline stroke, clean graphic vector render, transparent background.",
+      "transparent": true
+    },
+    {
+      "filename": "play_coin_25.png",
+      "purpose": "Graphic asset for the 25-cent (Quarter) play coin.",
+      "aspect_ratio": "1:1",
+      "prompt": "A flat 2D cartoon gold brass coin, top-down view, circular shape. Features an embossed graphic of a stylized cyber shark head in the center, surrounded by a micro-notched metallic edge. Big readable text \"25\u00a2\" stamped clearly on the coin face. Metallic gold highlights, warm dynamic shading, isolated on transparent background, video game item icon style, clean vector artwork.",
+      "transparent": true
+    },
+    {
+      "filename": "play_coin_10.png",
+      "purpose": "Graphic asset for the 10-cent (Dime) play coin.",
+      "aspect_ratio": "1:1",
+      "prompt": "A top-down 2D vector art illustration of a shiny nickel-silver play coin, circular format. Stamped with a central emblem of a cartoon star-burst and the clear bold text \"10\u00a2\". Bright silver metallic reflections, crisp clean rim design, isolated on transparent background, arcade game style, high quality UI asset.",
+      "transparent": true
+    },
+    {
+      "filename": "vault_background_felt.png",
+      "purpose": "Background texture canvas for the main Sandbox Vault screen.",
+      "aspect_ratio": "9:19.5",
+      "prompt": "A high-resolution top-down game background texture of a dark slate-teal gaming vault table surface. Made of soft matte felt fabric with subtle micro-textures, framed by soft ambient vignetting along the edges. Minimalist background design, non-distracting pattern, clean dark aesthetic, 4k texture quality, perfect for rendering floating UI components on top.",
+      "transparent": false
+    },
+    {
+      "filename": "wishlist_tray_icon.png",
+      "purpose": "Drawer pull handle icon for triggering the \"What-If\" Purchase Simulator.",
+      "aspect_ratio": "1:1",
+      "prompt": "A 3D cartoon style icon of a futuristic barcode price scanner combined with a golden price tag. Electric citrus orange color theme with glowing cyan accents. Dynamic angled perspective, thick rounded cartoon edges, clean stylized shading, isolated on transparent background, mobile app action button graphic.",
+      "transparent": true
+    }
+  ]
+}
