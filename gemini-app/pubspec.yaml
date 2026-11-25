@@ -23,3 +23,5 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - assets/images/everest_mountain_sports/
+    - assets/images/brighton_maker_tech/
