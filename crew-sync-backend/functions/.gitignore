@@ -1,0 +1,5 @@
+node_modules/
+.local-store.json
+.env*
+.secret.local
+.runtimeconfig.json

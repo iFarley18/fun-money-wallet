@@ -9,6 +9,7 @@ import '../models/money_balance.dart';
 import '../models/physics_item.dart';
 import '../repositories/balance_repository.dart';
 import '../services/pin_service.dart';
+import '../services/crew_sync_service.dart';
 import '../widgets/kid_switcher_sheet.dart';
 import '../widgets/play_bill_widget.dart';
 import '../widgets/play_coin_widget.dart';
@@ -45,8 +46,29 @@ class _VaultSandboxScreenState extends State<VaultSandboxScreen> {
   @override
   void initState() {
     super.initState();
-    _loadProfiles();
+    _loadProfiles().then((_) => _autoSyncCrew());
     _startPhysicsLoop();
+  }
+
+  /// Quietly refreshes Crew-linked kids on launch if their last sync is stale.
+  Future<void> _autoSyncCrew() async {
+    final crew = CrewSyncService();
+    if (!crew.isConfigured) return;
+    var changed = false;
+    for (final p in await widget.balanceRepository.getKidProfiles()) {
+      if (!p.isCrewLinked) continue;
+      final last = p.lastSyncedAt;
+      if (last != null && DateTime.now().difference(last) < const Duration(minutes: 15)) continue;
+      try {
+        final r = await crew.balance(p.id);
+        if (r.selected == null) continue;
+        await widget.balanceRepository.saveKidProfile(r.applyTo(p));
+        changed = true;
+      } catch (_) {
+        // Offline or Crew needs re-login: keep the last known total.
+      }
+    }
+    if (changed && mounted) await _loadProfiles();
   }
 
   @override

@@ -1,0 +1,4 @@
+{
+  "functions": [{ "source": "functions", "codebase": "crew-sync", "runtime": "nodejs22" }],
+  "firestore": { "rules": "firestore.rules" }
+}
