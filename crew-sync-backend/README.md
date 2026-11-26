@@ -37,3 +37,11 @@ Android emulator reaches it at `http://10.0.2.2:8787` (local builds only; needs 
    Plaid Dashboard → Developers → API → Allowed Android package names).
 4. `firebase deploy --only functions:crew-sync,firestore:rules --project <id>`
 5. Build the app with `--dart-define=CREW_SYNC_URL=https://us-central1-<id>.cloudfunctions.net/crewSync --dart-define=CREW_SYNC_KEY=<key>`.
+
+## Sandbox test notes (Nov 25, 2026)
+- Backend: `npm test` (4/4) and `scripts/sandbox-e2e.js` pass against live Plaid sandbox.
+- Plaid Link: completed with First Platypus Bank / `user_good` / `pass_good` via Plaid's web Link
+  (the box's API-31 emulator ships WebView 91, too old for Plaid Link's UI, so the native
+  Link sheet opens but stays blank there; real phones have a current WebView).
+- App on emulator: "Link Crew account" → "Use my linked First Platypus Bank login" → pick
+  "Plaid Saving ••1111" → total became $210.00 → vault shows 2×$100 + $10 bills.
