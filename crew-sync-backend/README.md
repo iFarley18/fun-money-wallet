@@ -17,6 +17,16 @@ Every call (except `GET /health`) needs header `x-crew-stash-key: <CREW_STASH_AP
 Only deposit accounts are returned. Firestore collections `crewStashKids` and
 `crewStashItems` are closed to all clients by `firestore.rules`.
 
+
+## Firebase project
+
+- Project ID: `crew-stash` (display name: crew-stash). Owned by bfarley.86@gmail.com.
+- Android app: `com.ifarley.gemini_fun_money` (app ID `1:578415278803:android:30e8a28dab777e60beb226`).
+- Firestore: native mode in `nam5` is configured in `firebase.json`, but the Cloud Firestore API is not enabled yet (blocked until it is turned on in this project).
+- Do not add a billing account from this repo. After Brian upgrades the project to Blaze at
+  https://console.firebase.google.com/project/crew-stash/usage/details
+  and enables Firestore, functions can be deployed (not done yet).
+
 ## Local sandbox run (what was used for testing)
 
 ```bash
